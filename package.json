@@ -1,0 +1,12 @@
+{
+  "name": "@pavlenkotm/megaeth-rpc-tester",
+  "version": "0.1.0",
+  "description": "Async RPC speed tester for MegaETH and EVM",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pavlenkotm/megaeth-rpc-tester.git"
+  },
+  "author": "Andrey Pavlenko",
+  "license": "MIT"
+}
