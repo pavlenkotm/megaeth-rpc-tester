@@ -1,4 +1,4 @@
-# ⚡ MegaETH RPC Tester
+# ⚡ MegaETH RPC Tester !!!
 
 Simple async CLI tool for testing the speed and reliability of Ethereum RPC endpoints.  
 Ideal for MegaETH, Alchemy, Ankr, or any EVM node.
