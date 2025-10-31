@@ -1,0 +1,40 @@
+# Example configuration for MegaETH RPC Tester
+# Save this as config.yaml and run: python -m rpc_tester --config config.yaml
+
+# RPC endpoints to test
+rpc_urls:
+  - https://eth.llamarpc.com
+  - https://rpc.ankr.com/eth
+  - https://ethereum.publicnode.com
+  - https://cloudflare-eth.com
+
+# Test parameters
+num_requests: 20              # Number of requests per endpoint/method
+concurrent_requests: 5        # Number of concurrent requests
+timeout: 30.0                 # Request timeout in seconds
+retry_attempts: 3             # Number of retry attempts on failure
+retry_delay: 1.0              # Initial delay between retries (exponential backoff)
+
+# RPC methods to test
+test_methods:
+  - eth_blockNumber
+  - eth_chainId
+  - eth_gasPrice
+  - net_version
+
+# Advanced test options
+test_eth_call: false          # Test eth_call method
+test_eth_getLogs: false       # Test eth_getLogs method
+test_address: null            # Address for eth_getBalance (set to test balance queries)
+test_block_range: 100         # Block range for eth_getLogs tests
+
+# Output options
+export_json: true             # Export results to JSON
+export_csv: true              # Export results to CSV
+export_html: true             # Export results to HTML
+output_dir: results           # Output directory for reports
+
+# Display options
+verbose: false                # Show detailed output including errors
+quiet: false                  # Minimal output mode
+show_percentiles: true        # Show P50/P95/P99 latency percentiles
