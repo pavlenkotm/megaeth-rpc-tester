@@ -7,11 +7,18 @@ import aiohttp
 import time
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
-import statistics
 from datetime import datetime
-import logging
 
-logger = logging.getLogger(__name__)
+from .logger import get_logger
+from .exceptions import (
+    RPCTesterError,
+    ConnectionError as RPCConnectionError,
+    TimeoutError as RPCTimeoutError,
+    InvalidResponseError
+)
+from .utils import calculate_percentile, calculate_statistics
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -50,24 +57,56 @@ class EndpointStats:
 
 
 class RPCTester:
-    """Advanced RPC endpoint tester."""
+    """Advanced RPC endpoint tester with improved error handling and performance."""
 
     def __init__(self, config):
-        """Initialize the RPC tester."""
+        """
+        Initialize the RPC tester.
+
+        Args:
+            config: Configuration object with test parameters
+        """
         self.config = config
         self.results: List[TestResult] = []
         self.session: Optional[aiohttp.ClientSession] = None
+        self._request_id = 0
 
     async def __aenter__(self):
         """Async context manager entry."""
-        timeout = aiohttp.ClientTimeout(total=self.config.timeout)
-        self.session = aiohttp.ClientSession(timeout=timeout)
+        # Configure connection pooling and timeouts
+        timeout = aiohttp.ClientTimeout(
+            total=self.config.timeout,
+            connect=min(10, self.config.timeout / 3),
+            sock_read=self.config.timeout
+        )
+
+        # Configure TCP connector for better performance
+        connector = aiohttp.TCPConnector(
+            limit=self.config.concurrent_requests * 2,
+            limit_per_host=self.config.concurrent_requests,
+            ttl_dns_cache=300,
+            enable_cleanup_closed=True
+        )
+
+        self.session = aiohttp.ClientSession(
+            timeout=timeout,
+            connector=connector,
+            headers={'Content-Type': 'application/json'}
+        )
+
+        logger.info(f"Initialized RPC tester with {self.config.concurrent_requests} concurrent requests")
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         if self.session:
             await self.session.close()
+            logger.info("Closed RPC tester session")
+
+    def _get_next_request_id(self) -> int:
+        """Get next request ID."""
+        self._request_id += 1
+        return self._request_id
 
     async def _make_rpc_request(
         self,
@@ -76,14 +115,24 @@ class RPCTester:
         params: Optional[List[Any]] = None,
         attempt: int = 1
     ) -> TestResult:
-        """Make a single RPC request with retry logic."""
+        """
+        Make a single RPC request with improved retry logic and error handling.
 
+        Args:
+            url: RPC endpoint URL
+            method: RPC method name
+            params: Method parameters
+            attempt: Current attempt number
+
+        Returns:
+            TestResult with request outcome
+        """
         if params is None:
             params = []
 
         payload = {
             "jsonrpc": "2.0",
-            "id": 1,
+            "id": self._get_next_request_id(),
             "method": method,
             "params": params
         }
@@ -93,21 +142,30 @@ class RPCTester:
         response_data = None
         status_code = None
         success = False
+        last_exception = None
 
         for retry in range(self.config.retry_attempts):
             try:
                 async with self.session.post(url, json=payload) as resp:
+                    latency = (time.perf_counter() - start_time) * 1000
                     status_code = resp.status
+
                     if resp.status == 200:
-                        data = await resp.json()
-                        latency = (time.perf_counter() - start_time) * 1000
+                        try:
+                            data = await resp.json()
+                        except Exception as json_error:
+                            error = f"Invalid JSON response: {str(json_error)}"
+                            logger.warning(f"JSON parsing error for {url}/{method}: {error}")
+                            raise InvalidResponseError(error)
 
                         if "error" in data:
                             error = str(data["error"])
                             success = False
+                            logger.debug(f"RPC error for {url}/{method}: {error}")
                         else:
                             response_data = data.get("result")
                             success = True
+                            logger.debug(f"Successful request to {url}/{method} in {latency:.2f}ms")
 
                         return TestResult(
                             url=url,
@@ -121,36 +179,76 @@ class RPCTester:
                         )
                     else:
                         error = f"HTTP {resp.status}"
+                        # Try to get error message from response
+                        try:
+                            error_text = await resp.text()
+                            if error_text:
+                                error += f": {error_text[:100]}"
+                        except Exception:
+                            pass
+
+                        logger.warning(f"HTTP error {resp.status} for {url}/{method}")
+
                         # Retry on server errors
                         if resp.status >= 500 and retry < self.config.retry_attempts - 1:
-                            await asyncio.sleep(self.config.retry_delay * (2 ** retry))
+                            retry_delay = self.config.retry_delay * (2 ** retry)
+                            logger.info(f"Retrying {url}/{method} after {retry_delay}s (attempt {retry + 1})")
+                            await asyncio.sleep(retry_delay)
+                            start_time = time.perf_counter()  # Reset timer for retry
                             continue
                         else:
                             break
 
-            except asyncio.TimeoutError:
-                error = "Timeout"
+            except asyncio.TimeoutError as e:
+                last_exception = e
+                error = f"Request timeout after {self.config.timeout}s"
+                logger.warning(f"Timeout for {url}/{method}")
+
                 if retry < self.config.retry_attempts - 1:
-                    await asyncio.sleep(self.config.retry_delay * (2 ** retry))
+                    retry_delay = self.config.retry_delay * (2 ** retry)
+                    logger.info(f"Retrying {url}/{method} after {retry_delay}s")
+                    await asyncio.sleep(retry_delay)
+                    start_time = time.perf_counter()
+                    continue
+                else:
+                    break
+
+            except aiohttp.ClientError as e:
+                last_exception = e
+                error = f"Connection error: {str(e)}"
+                logger.warning(f"Connection error for {url}/{method}: {error}")
+
+                if retry < self.config.retry_attempts - 1:
+                    retry_delay = self.config.retry_delay * (2 ** retry)
+                    await asyncio.sleep(retry_delay)
+                    start_time = time.perf_counter()
                     continue
                 else:
                     break
 
             except Exception as e:
-                error = str(e)
+                last_exception = e
+                error = f"Unexpected error: {type(e).__name__}: {str(e)}"
+                logger.error(f"Unexpected error for {url}/{method}: {error}")
+
                 if retry < self.config.retry_attempts - 1:
-                    await asyncio.sleep(self.config.retry_delay * (2 ** retry))
+                    retry_delay = self.config.retry_delay * (2 ** retry)
+                    await asyncio.sleep(retry_delay)
+                    start_time = time.perf_counter()
                     continue
                 else:
                     break
 
+        # All retries failed
         latency = (time.perf_counter() - start_time) * 1000
+        logger.error(f"All {self.config.retry_attempts} attempts failed for {url}/{method}: {error}")
+
         return TestResult(
             url=url,
             method=method,
             success=False,
             latency_ms=latency,
-            error=error,
+            error=error or "Unknown error",
             status_code=status_code,
             attempt=self.config.retry_attempts
         )
@@ -161,26 +259,54 @@ class RPCTester:
         method: str,
         params: Optional[List[Any]] = None
     ) -> List[TestResult]:
-        """Test an endpoint with multiple requests."""
+        """
+        Test an endpoint with multiple requests using controlled concurrency.
 
-        tasks = []
-        for i in range(self.config.num_requests):
-            # Control concurrency
-            if i > 0 and i % self.config.concurrent_requests == 0:
-                # Wait for the previous batch to complete
-                batch_results = await asyncio.gather(*tasks)
-                self.results.extend(batch_results)
-                tasks = []
+        Args:
+            url: RPC endpoint URL
+            method: RPC method name
+            params: Method parameters
 
-            task = self._make_rpc_request(url, method, params)
-            tasks.append(task)
+        Returns:
+            List of test results
+        """
+        logger.info(f"Testing {url}/{method} with {self.config.num_requests} requests")
 
-        # Complete remaining tasks
-        if tasks:
-            batch_results = await asyncio.gather(*tasks)
-            self.results.extend(batch_results)
+        # Create semaphore for concurrency control
+        semaphore = asyncio.Semaphore(self.config.concurrent_requests)
 
-        return [r for r in self.results if r.url == url and r.method == method]
+        async def rate_limited_request():
+            """Execute request with rate limiting."""
+            async with semaphore:
+                return await self._make_rpc_request(url, method, params)
+
+        # Create all tasks
+        tasks = [rate_limited_request() for _ in range(self.config.num_requests)]
+
+        # Execute all tasks concurrently with rate limiting
+        batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Process results and handle exceptions
+        for result in batch_results:
+            if isinstance(result, Exception):
+                logger.error(f"Task exception for {url}/{method}: {result}")
+                # Create failed result for exception
+                self.results.append(TestResult(
+                    url=url,
+                    method=method,
+                    success=False,
+                    latency_ms=0,
+                    error=f"Task exception: {str(result)}",
+                    status_code=None,
+                    attempt=1
+                ))
+            else:
+                self.results.append(result)
+
+        endpoint_results = [r for r in self.results if r.url == url and r.method == method]
+        logger.info(f"Completed testing {url}/{method}: {len(endpoint_results)} results")
+
+        return endpoint_results
 
     async def test_all_endpoints(self) -> Dict[str, Dict[str, List[TestResult]]]:
         """Test all configured endpoints with all methods."""
@@ -224,14 +350,23 @@ class RPCTester:
         url: str,
         method: str
     ) -> Optional[EndpointStats]:
-        """Calculate statistics for an endpoint/method combination."""
+        """
+        Calculate comprehensive statistics for an endpoint/method combination.
 
+        Args:
+            url: RPC endpoint URL
+            method: RPC method name
+
+        Returns:
+            EndpointStats with calculated statistics or None if no results
+        """
         endpoint_results = [
             r for r in self.results
             if r.url == url and r.method == method
         ]
 
         if not endpoint_results:
+            logger.warning(f"No results found for {url}/{method}")
             return None
 
         successful = [r for r in endpoint_results if r.success]
@@ -240,6 +375,7 @@ class RPCTester:
         latencies = [r.latency_ms for r in successful if r.latency_ms is not None]
 
         if not latencies:
+            logger.info(f"No successful requests for {url}/{method}")
             return EndpointStats(
                 url=url,
                 method=method,
@@ -257,6 +393,11 @@ class RPCTester:
                 errors=[r.error for r in failed if r.error]
             )
 
+        # Calculate statistics using utility function
+        stats_dict = calculate_statistics(latencies)
+
+        logger.info(f"Statistics for {url}/{method}: success_rate={len(successful) / len(endpoint_results) * 100:.1f}%, avg={stats_dict['mean']:.2f}ms")
+
         return EndpointStats(
             url=url,
             method=method,
@@ -265,23 +406,14 @@ class RPCTester:
             failed_requests=len(failed),
             success_rate=len(successful) / len(endpoint_results) * 100,
             latencies=latencies,
-            avg_latency=statistics.mean(latencies),
-            min_latency=min(latencies),
-            max_latency=max(latencies),
-            p50_latency=statistics.median(latencies),
-            p95_latency=self._percentile(latencies, 0.95),
-            p99_latency=self._percentile(latencies, 0.99),
+            avg_latency=stats_dict['mean'],
+            min_latency=stats_dict['min'],
+            max_latency=stats_dict['max'],
+            p50_latency=stats_dict['p50'],
+            p95_latency=stats_dict['p95'],
+            p99_latency=stats_dict['p99'],
             errors=[r.error for r in failed if r.error]
         )
-
-    @staticmethod
-    def _percentile(data: List[float], percentile: float) -> float:
-        """Calculate percentile."""
-        if not data:
-            return 0.0
-        sorted_data = sorted(data)
-        index = int(len(sorted_data) * percentile)
-        return sorted_data[min(index, len(sorted_data) - 1)]
 
     def get_all_statistics(self) -> Dict[str, Dict[str, EndpointStats]]:
         """Get statistics for all endpoints and methods."""
