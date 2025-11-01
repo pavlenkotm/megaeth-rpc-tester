@@ -71,6 +71,11 @@ results/
 !example_config.yaml
 !package.json
 
+# Test configuration files
+test_config.yaml
+test_*.yaml
+test_*.json
+
 # Temporary files
 tmp/
 temp/

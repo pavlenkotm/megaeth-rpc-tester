@@ -1,16 +1,11 @@
 # Core dependencies
 aiohttp>=3.9.0
-asyncio-throttle>=1.0.2
 
 # CLI and UI
 rich>=13.7.0
-click>=8.1.7
 
 # Configuration
 pyyaml>=6.0.1
-
-# Data processing
-statistics-stdev>=0.1.0
 
 # Testing (optional)
 pytest>=7.4.3
