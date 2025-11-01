@@ -1,10 +1,11 @@
 """
-Rich CLI interface for RPC Tester.
+Rich CLI interface for RPC Tester with enhanced logging and error handling.
 """
 
 import argparse
 import asyncio
 import sys
+import logging
 from pathlib import Path
 from typing import Dict, List
 
@@ -18,9 +19,11 @@ from rich import box
 from .core import RPCTester, EndpointStats
 from .config import Config
 from .reporting import Reporter
-
+from .logger import setup_logger, get_logger
+from .exceptions import RPCTesterError, ConfigurationError, ValidationError
 
 console = Console()
+logger = get_logger(__name__)
 
 
 class CLI:
@@ -149,76 +152,149 @@ Examples:
         return parser
 
     def run(self, args: List[str] = None) -> int:
-        """Run the CLI."""
+        """
+        Run the CLI.
 
-        parsed_args = self.parser.parse_args(args)
+        Args:
+            args: Command line arguments (None = sys.argv)
 
-        # Handle config generation
-        if parsed_args.generate_config:
-            self._generate_config(parsed_args.generate_config)
-            return 0
+        Returns:
+            Exit code (0 = success, 1 = error)
+        """
+        try:
+            parsed_args = self.parser.parse_args(args)
 
-        # Load or create configuration
-        if parsed_args.config:
-            try:
-                config = Config.from_file(parsed_args.config)
-            except Exception as e:
-                console.print(f"[red]Error loading config: {e}[/red]")
-                return 1
-        else:
-            # Create config from CLI args
-            if not parsed_args.urls:
-                console.print("[red]Error: No RPC URLs provided[/red]")
-                console.print("Use --help for usage information")
-                return 1
+            # Handle config generation
+            if parsed_args.generate_config:
+                self._generate_config(parsed_args.generate_config)
+                return 0
 
-            config = Config(
-                rpc_urls=parsed_args.urls,
-                num_requests=parsed_args.num_requests,
-                concurrent_requests=parsed_args.concurrent,
-                test_methods=parsed_args.methods,
-                timeout=parsed_args.timeout,
-                retry_attempts=parsed_args.retry,
-                export_json=parsed_args.json,
-                export_csv=parsed_args.csv,
-                export_html=parsed_args.html,
-                output_dir=parsed_args.output_dir,
-                verbose=parsed_args.verbose,
-                quiet=parsed_args.quiet
-            )
+            # Setup logging based on verbosity
+            log_level = logging.DEBUG if parsed_args.verbose else logging.WARNING
+            if not parsed_args.quiet:
+                setup_logger(
+                    level=log_level,
+                    console_output=parsed_args.verbose,
+                    colored=True
+                )
 
-        # Run tests
-        return asyncio.run(self._run_tests(config))
+            logger.info("Starting RPC Tester CLI")
+
+            # Load or create configuration
+            if parsed_args.config:
+                try:
+                    config = Config.from_file(parsed_args.config)
+                    # Override config with CLI args if provided
+                    if parsed_args.verbose:
+                        config.verbose = True
+                    if parsed_args.quiet:
+                        config.quiet = True
+                except ConfigurationError as e:
+                    console.print(f"[red]Configuration Error: {e}[/red]")
+                    logger.error(f"Configuration error: {e}")
+                    return 1
+                except ValidationError as e:
+                    console.print(f"[red]Validation Error: {e}[/red]")
+                    logger.error(f"Validation error: {e}")
+                    return 1
+                except Exception as e:
+                    console.print(f"[red]Error loading config: {e}[/red]")
+                    logger.error(f"Unexpected error loading config: {e}", exc_info=True)
+                    return 1
+            else:
+                # Create config from CLI args
+                if not parsed_args.urls:
+                    console.print("[red]Error: No RPC URLs provided[/red]")
+                    console.print("Use --help for usage information")
+                    return 1
+
+                try:
+                    config = Config(
+                        rpc_urls=parsed_args.urls,
+                        num_requests=parsed_args.num_requests,
+                        concurrent_requests=parsed_args.concurrent,
+                        test_methods=parsed_args.methods,
+                        timeout=parsed_args.timeout,
+                        retry_attempts=parsed_args.retry,
+                        export_json=parsed_args.json,
+                        export_csv=parsed_args.csv,
+                        export_html=parsed_args.html,
+                        output_dir=parsed_args.output_dir,
+                        verbose=parsed_args.verbose,
+                        quiet=parsed_args.quiet
+                    )
+                except ValidationError as e:
+                    console.print(f"[red]Validation Error: {e}[/red]")
+                    logger.error(f"Validation error: {e}")
+                    return 1
+
+            # Run tests
+            logger.info(f"Running tests with config: {len(config.rpc_urls)} URLs, {len(config.test_methods)} methods")
+            return asyncio.run(self._run_tests(config))
+
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Tests interrupted by user[/yellow]")
+            logger.info("Tests interrupted by user")
+            return 130
+        except Exception as e:
+            console.print(f"\n[red]Unexpected error: {e}[/red]")
+            logger.error(f"Unexpected error in CLI: {e}", exc_info=True)
+            return 1
 
     async def _run_tests(self, config: Config) -> int:
-        """Run RPC tests."""
+        """
+        Run RPC tests with proper error handling.
 
+        Args:
+            config: Test configuration
+
+        Returns:
+            Exit code (0 = success, 1 = error)
+        """
         if not config.quiet:
             self._print_header(config)
 
         try:
+            logger.info("Initializing RPC tester")
             async with RPCTester(config) as tester:
                 # Run tests with progress bar
+                logger.info("Starting test execution")
                 if not config.quiet:
                     await self._run_tests_with_progress(tester, config)
                 else:
                     await tester.test_all_endpoints()
 
                 # Calculate statistics
+                logger.info("Calculating statistics")
                 stats = tester.get_all_statistics()
+
+                if not stats or all(not methods for methods in stats.values()):
+                    console.print("[yellow]Warning: No test results to display[/yellow]")
+                    logger.warning("No test results generated")
+                    return 1
 
                 # Display results
                 if not config.quiet:
+                    logger.info("Displaying results")
                     self._display_results(stats, config)
 
                 # Export results
                 if config.export_json or config.export_csv or config.export_html:
+                    logger.info("Exporting results")
                     self._export_results(stats, config)
 
+                logger.info("Tests completed successfully")
                 return 0
 
+        except RPCTesterError as e:
+            console.print(f"\n[red]RPC Tester Error: {e}[/red]")
+            logger.error(f"RPC Tester error: {e}")
+            if config.verbose:
+                console.print_exception()
+            return 1
         except Exception as e:
-            console.print(f"\n[red]Error: {e}[/red]")
+            console.print(f"\n[red]Unexpected Error: {e}[/red]")
+            logger.error(f"Unexpected error during test execution: {e}", exc_info=True)
             if config.verbose:
                 console.print_exception()
             return 1
