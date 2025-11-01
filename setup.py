@@ -23,9 +23,9 @@ else:
 
 setup(
     name="megaeth-rpc-tester",
-    version="2.0.0",
+    version="2.1.0",
     author="pavlenkotm",
-    description="Advanced async RPC testing tool for Ethereum nodes",
+    description="Advanced async RPC testing tool for Ethereum nodes with enhanced reporting",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/pavlenkotm/megaeth-rpc-tester",
@@ -35,6 +35,8 @@ setup(
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Testing",
         "Topic :: System :: Networking",
+        "Topic :: Blockchain",
+        "Topic :: Internet :: WWW/HTTP",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
@@ -42,6 +44,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Operating System :: OS Independent",
     ],
     python_requires=">=3.8",
     install_requires=requirements,
@@ -52,6 +55,8 @@ setup(
             "pytest-cov>=4.1.0",
             "mypy>=1.7.0",
             "types-PyYAML>=6.0.12",
+            "black>=23.0.0",
+            "flake8>=6.0.0",
         ]
     },
     entry_points={
@@ -59,4 +64,5 @@ setup(
             "rpc-tester=rpc_tester.cli:main",
         ],
     },
+    keywords="ethereum rpc testing benchmarking blockchain web3 performance monitoring",
 )
