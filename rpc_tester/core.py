@@ -276,12 +276,24 @@ class RPCTester:
 
     @staticmethod
     def _percentile(data: List[float], percentile: float) -> float:
-        """Calculate percentile."""
+        """Calculate percentile using linear interpolation."""
         if not data:
             return 0.0
         sorted_data = sorted(data)
-        index = int(len(sorted_data) * percentile)
-        return sorted_data[min(index, len(sorted_data) - 1)]
+        n = len(sorted_data)
+
+        # Using the same method as numpy's percentile with linear interpolation
+        # Position in array (0-indexed)
+        pos = (n - 1) * percentile
+        floor_pos = int(pos)
+        ceil_pos = min(floor_pos + 1, n - 1)
+
+        # Linear interpolation between floor and ceiling positions
+        if floor_pos == ceil_pos:
+            return sorted_data[floor_pos]
+
+        weight = pos - floor_pos
+        return sorted_data[floor_pos] * (1 - weight) + sorted_data[ceil_pos] * weight
 
     def get_all_statistics(self) -> Dict[str, Dict[str, EndpointStats]]:
         """Get statistics for all endpoints and methods."""
