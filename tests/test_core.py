@@ -117,16 +117,20 @@ def test_calculate_statistics():
 
 
 def test_percentile_calculation():
-    """Test percentile calculation."""
+    """Test percentile calculation with linear interpolation."""
     data = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
     p50 = RPCTester._percentile(data, 0.50)
     p95 = RPCTester._percentile(data, 0.95)
     p99 = RPCTester._percentile(data, 0.99)
 
-    assert p50 == 50
-    assert p95 == 90
-    assert p99 == 100
+    # With linear interpolation:
+    # p50: position = (10-1) * 0.50 = 4.5, interpolate between data[4]=50 and data[5]=60 -> 55.0
+    # p95: position = (10-1) * 0.95 = 8.55, interpolate between data[8]=90 and data[9]=100 -> 95.5
+    # p99: position = (10-1) * 0.99 = 8.91, interpolate between data[8]=90 and data[9]=100 -> 99.1
+    assert p50 == 55.0
+    assert p95 == pytest.approx(95.5, rel=1e-2)
+    assert p99 == pytest.approx(99.1, rel=1e-2)
 
 
 def test_get_params_for_method():

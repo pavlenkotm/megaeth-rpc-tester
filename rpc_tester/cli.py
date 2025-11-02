@@ -162,6 +162,36 @@ Examples:
         if parsed_args.config:
             try:
                 config = Config.from_file(parsed_args.config)
+
+                # Override config values with CLI arguments if explicitly provided
+                # Check if argument was explicitly set (different from default)
+                parser_defaults = self.parser.get_default
+
+                if parsed_args.urls:
+                    config.rpc_urls = parsed_args.urls
+                if parsed_args.num_requests != parser_defaults('num_requests'):
+                    config.num_requests = parsed_args.num_requests
+                if parsed_args.concurrent != parser_defaults('concurrent'):
+                    config.concurrent_requests = parsed_args.concurrent
+                if parsed_args.methods != parser_defaults('methods'):
+                    config.test_methods = parsed_args.methods
+                if parsed_args.timeout != parser_defaults('timeout'):
+                    config.timeout = parsed_args.timeout
+                if parsed_args.retry != parser_defaults('retry'):
+                    config.retry_attempts = parsed_args.retry
+                if parsed_args.json:
+                    config.export_json = True
+                if parsed_args.csv:
+                    config.export_csv = True
+                if parsed_args.html:
+                    config.export_html = True
+                if parsed_args.output_dir != parser_defaults('output_dir'):
+                    config.output_dir = parsed_args.output_dir
+                if parsed_args.verbose:
+                    config.verbose = True
+                if parsed_args.quiet:
+                    config.quiet = True
+
             except Exception as e:
                 console.print(f"[red]Error loading config: {e}[/red]")
                 return 1

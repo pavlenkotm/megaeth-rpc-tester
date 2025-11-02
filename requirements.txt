@@ -9,9 +9,6 @@ click>=8.1.7
 # Configuration
 pyyaml>=6.0.1
 
-# Data processing
-statistics-stdev>=0.1.0
-
 # Testing (optional)
 pytest>=7.4.3
 pytest-asyncio>=0.21.1
