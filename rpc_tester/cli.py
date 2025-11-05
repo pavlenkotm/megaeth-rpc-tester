@@ -146,6 +146,43 @@ Examples:
             help="Generate example configuration file and exit"
         )
 
+        parser.add_argument(
+            "--markdown",
+            action="store_true",
+            help="Export results to Markdown"
+        )
+
+        parser.add_argument(
+            "--prometheus",
+            action="store_true",
+            help="Export metrics in Prometheus format"
+        )
+
+        parser.add_argument(
+            "--cache",
+            action="store_true",
+            help="Enable result caching"
+        )
+
+        parser.add_argument(
+            "--cache-ttl",
+            type=int,
+            default=3600,
+            help="Cache TTL in seconds (default: 3600)"
+        )
+
+        parser.add_argument(
+            "--rate-limit",
+            type=float,
+            help="Rate limit in requests per second"
+        )
+
+        parser.add_argument(
+            "--version",
+            action="version",
+            version="MegaETH RPC Tester v2.0.0"
+        )
+
         return parser
 
     def run(self, args: List[str] = None) -> int:
