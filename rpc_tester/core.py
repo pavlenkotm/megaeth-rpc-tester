@@ -210,6 +210,24 @@ class RPCTester:
             return []
         elif method == "eth_getBalance" and self.config.test_address:
             return [self.config.test_address, "latest"]
+        elif method == "eth_getBlockByNumber":
+            return ["latest", False]
+        elif method == "eth_getTransactionCount" and self.config.test_address:
+            return [self.config.test_address, "latest"]
+        elif method == "eth_estimateGas":
+            return [{"to": "0x0000000000000000000000000000000000000000", "data": "0x"}]
+        elif method == "eth_getBlockTransactionCountByNumber":
+            return ["latest"]
+        elif method == "eth_syncing":
+            return []
+        elif method == "eth_mining":
+            return []
+        elif method == "eth_hashrate":
+            return []
+        elif method == "eth_accounts":
+            return []
+        elif method == "web3_clientVersion":
+            return []
         elif method == "eth_call" and self.config.test_eth_call:
             # Simple eth_call example
             return [{"to": "0x0000000000000000000000000000000000000000", "data": "0x"}, "latest"]
