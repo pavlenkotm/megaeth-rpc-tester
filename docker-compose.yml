@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  rpc-tester:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: megaeth-rpc-tester:latest
+    container_name: rpc-tester
+    volumes:
+      # Mount config files
+      - ./example_config.yaml:/app/config.yaml:ro
+      # Mount results directory
+      - ./results:/app/results
+      # Optional: Mount custom configs
+      - ./configs:/app/configs:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Override command to use config file
+    command: ["--config", "/app/config.yaml"]
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    # Network mode
+    network_mode: bridge
+
+  # Continuous monitoring service
+  rpc-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: megaeth-rpc-tester:latest
+    container_name: rpc-monitor
+    volumes:
+      - ./monitor_config.yaml:/app/config.yaml:ro
+      - ./monitoring:/app/results
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: [
+      "--config", "/app/config.yaml",
+      "--json", "--csv",
+      "-v"
+    ]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
