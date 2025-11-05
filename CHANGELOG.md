@@ -2,6 +2,83 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2024-11-05
+
+### Added
+
+#### New Core Features
+- **WebSocket Support**: Full WebSocket RPC testing with subscriptions and real-time notifications
+- **Result Caching**: In-memory and persistent disk-based caching mechanisms
+- **Advanced Metrics**: Comprehensive metrics collection, aggregation, and time-series tracking
+- **Rate Limiting**: Multiple algorithms (token bucket, sliding window, adaptive)
+- **Health Monitoring**: Continuous endpoint health checking with uptime tracking
+- **Prometheus Integration**: Export metrics in Prometheus format with Pushgateway support
+- **Structured Logging**: JSON and colored console logging with log levels
+- **Configuration Validation**: Comprehensive input and data validation
+
+#### New Export Formats
+- **Markdown Export**: GitHub-flavored Markdown reports with tables and emojis
+- **Prometheus Metrics**: Gauges, counters, and histograms for monitoring
+
+#### New Modules (9 total)
+- `rpc_tester/exceptions.py`: Custom exception hierarchy
+- `rpc_tester/cache.py`: Caching mechanisms (in-memory and persistent)
+- `rpc_tester/metrics.py`: Advanced metrics tracking
+- `rpc_tester/logger.py`: Structured logging system
+- `rpc_tester/validators.py`: Configuration and data validation
+- `rpc_tester/websocket.py`: WebSocket RPC client
+- `rpc_tester/rate_limiter.py`: Rate limiting implementations
+- `rpc_tester/health.py`: Health monitoring system
+- `rpc_tester/prometheus_exporter.py`: Prometheus metrics export
+
+#### Infrastructure & DevOps
+- **Docker Support**: Multi-stage Dockerfile and docker-compose.yml
+- **GitHub Actions**: CI/CD workflows for testing, linting, and releases
+- **Makefile**: Development automation with 30+ commands
+- **Security Scanning**: Integrated bandit and safety checks
+- **Multi-Python Testing**: Test matrix for Python 3.9-3.12
+
+#### Documentation & Examples
+- **5 Complete Examples**: Basic usage, comparison, caching, health monitoring, Prometheus
+- **CONTRIBUTING.md**: Comprehensive contributor guidelines
+- **Enhanced README**: Detailed documentation with all new features
+
+### Enhanced
+
+#### Extended RPC Method Support
+Added 10+ new methods:
+- `eth_getBlockByNumber`
+- `eth_getTransactionCount`
+- `eth_estimateGas`
+- `eth_getBlockTransactionCountByNumber`
+- `eth_syncing`
+- `eth_mining`
+- `eth_hashrate`
+- `eth_accounts`
+- `web3_clientVersion`
+
+#### CLI Enhancements
+New command-line options:
+- `--markdown`: Export to Markdown
+- `--prometheus`: Export Prometheus metrics
+- `--cache`: Enable caching
+- `--cache-ttl`: Configure cache TTL
+- `--rate-limit`: Set request rate limit
+- `--version`: Display version
+
+#### Dependencies
+- Added `websockets>=12.0` for WebSocket support
+- Added `pandas>=2.0.0` for advanced analytics
+- Added `diskcache>=5.6.3` for persistent caching
+- Added `prometheus-client>=0.19.0` for metrics
+- Added development tools (black, isort, flake8, bandit)
+
+### Testing
+- **Integration Test Suite**: 13 comprehensive integration tests
+- **Coverage Reports**: HTML and XML coverage reporting
+- **Async Testing**: Full pytest-asyncio support
+- **Docker Testing**: Automated Docker image testing
+
 ## [2.0.0] - 2024
 
 ### Major Improvements

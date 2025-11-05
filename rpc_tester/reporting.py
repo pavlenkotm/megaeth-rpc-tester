@@ -304,3 +304,130 @@ class Reporter:
             rows.append(row)
 
         return rows
+
+    def export_markdown(
+        self,
+        stats: Dict[str, Dict[str, EndpointStats]],
+        filename: str = None
+    ) -> str:
+        """Export results to Markdown."""
+
+        if filename is None:
+            filename = f"rpc_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+
+        filepath = self.output_dir / filename
+
+        md = f"# RPC Test Results\n\n"
+        md += f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+
+        for url, methods in stats.items():
+            md += f"## 🔗 {url}\n\n"
+
+            # Create table
+            md += "| Method | Requests | Success Rate | Avg Latency | Min | P50 | P95 | P99 | Max |\n"
+            md += "|--------|----------|--------------|-------------|-----|-----|-----|-----|-----|\n"
+
+            for method, stat in methods.items():
+                success_emoji = "✅" if stat.success_rate >= 95 else "⚠️" if stat.success_rate >= 80 else "❌"
+
+                md += f"| {method} | {stat.total_requests} | "
+                md += f"{success_emoji} {stat.success_rate:.1f}% | "
+                md += f"{stat.avg_latency:.2f}ms | "
+                md += f"{stat.min_latency:.2f}ms | "
+                md += f"{stat.p50_latency:.2f}ms | "
+                md += f"{stat.p95_latency:.2f}ms | "
+                md += f"{stat.p99_latency:.2f}ms | "
+                md += f"{stat.max_latency:.2f}ms |\n"
+
+            md += "\n"
+
+            # Add errors if any
+            has_errors = any(stat.errors for stat in methods.values())
+            if has_errors:
+                md += "### ⚠️ Errors\n\n"
+                for method, stat in methods.items():
+                    if stat.errors:
+                        md += f"**{method}:**\n"
+                        for error in stat.errors[:5]:
+                            md += f"- {error}\n"
+                        if len(stat.errors) > 5:
+                            md += f"- ... and {len(stat.errors) - 5} more\n"
+                        md += "\n"
+
+        # Comparison section
+        if len(stats) > 1:
+            md += "## 📊 Comparison\n\n"
+            md += "| Method | " + " | ".join(stats.keys()) + " |\n"
+            md += "|--------|" + "|".join(["--------"] * len(stats)) + "|\n"
+
+            # Get all methods
+            all_methods = set()
+            for methods in stats.values():
+                all_methods.update(methods.keys())
+
+            for method in sorted(all_methods):
+                md += f"| {method} | "
+                cells = []
+
+                # Find best latency for this method
+                latencies = []
+                for url in stats.keys():
+                    if method in stats[url]:
+                        latencies.append(stats[url][method].avg_latency)
+                best_latency = min(latencies) if latencies else None
+
+                for url in stats.keys():
+                    if method in stats[url]:
+                        stat = stats[url][method]
+                        cell = f"{stat.avg_latency:.1f}ms"
+
+                        # Mark best performer
+                        if best_latency and abs(stat.avg_latency - best_latency) < 0.1:
+                            cell = f"**{cell}** ⚡"
+
+                        # Add success indicator
+                        if stat.success_rate >= 95:
+                            cell += " ✅"
+                        elif stat.success_rate >= 80:
+                            cell += " ⚠️"
+                        else:
+                            cell += " ❌"
+
+                        cells.append(cell)
+                    else:
+                        cells.append("N/A")
+
+                md += " | ".join(cells) + " |\n"
+
+            md += "\n"
+
+        # Summary statistics
+        md += "## 📈 Summary\n\n"
+        md += "### Overall Statistics\n\n"
+
+        total_requests = sum(
+            stat.total_requests
+            for methods in stats.values()
+            for stat in methods.values()
+        )
+        total_successful = sum(
+            stat.successful_requests
+            for methods in stats.values()
+            for stat in methods.values()
+        )
+        total_failed = sum(
+            stat.failed_requests
+            for methods in stats.values()
+            for stat in methods.values()
+        )
+
+        md += f"- **Total Requests:** {total_requests}\n"
+        md += f"- **Successful:** {total_successful} ({total_successful/total_requests*100:.1f}%)\n"
+        md += f"- **Failed:** {total_failed} ({total_failed/total_requests*100:.1f}%)\n"
+        md += f"- **Endpoints Tested:** {len(stats)}\n"
+        md += f"- **Methods Tested:** {len(all_methods) if len(stats) > 1 else len(next(iter(stats.values())))}\n"
+
+        with open(filepath, 'w') as f:
+            f.write(md)
+
+        return str(filepath)
