@@ -23,7 +23,7 @@ else:
 
 setup(
     name="megaeth-rpc-tester",
-    version="2.0.0",
+    version="3.0.0",
     author="pavlenkotm",
     description="Advanced async RPC testing tool for Ethereum nodes",
     long_description=long_description,
