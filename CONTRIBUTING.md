@@ -1,291 +1,209 @@
-# Contributing to MegaETH RPC Tester
+# Contributing to Web3 Multi-Language Playground
 
-Thank you for your interest in contributing to MegaETH RPC Tester! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing! This repository showcases Web3 development across 14+ programming languages. We welcome contributions in any language or technology stack.
+
+## 🌟 Ways to Contribute
+
+- 🐛 **Bug Fixes**: Fix issues in any language implementation
+- ✨ **New Features**: Add functionality to existing examples
+- 🔤 **New Languages**: Add examples in additional programming languages
+- 📚 **Documentation**: Improve READMEs, add tutorials, fix typos
+- 🧪 **Tests**: Add or improve test coverage
+- 🎨 **UI/UX**: Enhance the landing page or frontend components
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Python 3.9 or higher
-- Git
-- pip or poetry for dependency management
+Depending on which language you want to contribute to, you'll need different tools:
+
+#### Smart Contract Languages
+- **Solidity**: Node.js 16+, Hardhat
+- **Vyper**: Python 3.10+, Vyper compiler
+- **Rust**: Rust 1.70+, Anchor CLI
+- **Move**: Aptos CLI
+
+#### Application Languages
+- **TypeScript/JavaScript**: Node.js 18+, npm/yarn
+- **Go**: Go 1.21+
+- **Python**: Python 3.9+
+- **Java**: JDK 11+, Maven
+- **Ruby**: Ruby 2.7+
+
+#### Systems Languages
+- **C++**: GCC/Clang, CMake, OpenSSL
+- **Zig**: Zig 0.11+
+- **AssemblyScript**: Node.js, asc compiler
+- **Haskell**: GHC 9.0+
 
 ### Setting Up Development Environment
 
-1. **Fork and clone the repository:**
+1. **Fork and clone:**
    ```bash
    git clone https://github.com/YOUR_USERNAME/megaeth-rpc-tester.git
    cd megaeth-rpc-tester
    ```
 
-2. **Create a virtual environment:**
+2. **Create a branch:**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   git checkout -b feature/your-feature-name
    ```
 
-3. **Install dependencies:**
+3. **Set up your language environment:**
    ```bash
-   pip install -r requirements.txt
-   pip install -e .
+   # For example, if working on TypeScript:
+   cd languages/typescript
+   npm install
    ```
 
-4. **Install development dependencies:**
+## 📝 Contribution Guidelines
+
+### Code Quality
+
+- Follow the existing code style in each language
+- Add comprehensive comments and documentation
+- Include error handling and input validation
+- Write clean, maintainable code
+
+### Documentation
+
+- Update the README.md in the relevant language folder
+- Include usage examples
+- Document any new dependencies
+- Add inline code comments for complex logic
+
+### Testing
+
+- Add tests for new functionality where applicable
+- Ensure existing tests still pass
+- Include test instructions in your PR
+
+### Commit Messages
+
+Use conventional commit format:
+
+```
+type(scope): brief description
+
+- feat(solidity): add staking contract example
+- fix(typescript): correct wallet connection bug
+- docs(readme): update installation instructions
+- test(rust): add integration tests for token program
+- chore(deps): upgrade ethers.js to v6
+```
+
+## 🔤 Adding a New Language
+
+To add a new programming language:
+
+1. **Create language folder:**
    ```bash
-   pip install black isort flake8 mypy pytest pytest-asyncio pytest-cov
+   mkdir languages/your-language
+   cd languages/your-language
    ```
 
-## 📝 Development Workflow
+2. **Add working code example:**
+   - Implement a Web3-related functionality
+   - RPC client, smart contract, or utility functions
+   - Ensure code compiles/runs successfully
 
-### 1. Create a Branch
+3. **Create README.md:**
+   - Overview of the example
+   - Prerequisites and setup
+   - Build/run instructions
+   - Usage examples
+   - License information
 
-Create a new branch for your feature or bugfix:
+4. **Add dependencies:**
+   - Include package manager files (package.json, Cargo.toml, etc.)
+   - List all required dependencies
 
-```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/your-bugfix-name
-```
+5. **Update main README:**
+   - Add your language to the language table
+   - Include brief description
 
-### 2. Make Changes
-
-- Write clear, concise code
-- Follow the existing code style
-- Add tests for new features
-- Update documentation as needed
-
-### 3. Code Style
-
-We use several tools to maintain code quality:
-
-**Format code with Black:**
-```bash
-black rpc_tester/
-```
-
-**Sort imports with isort:**
-```bash
-isort rpc_tester/
-```
-
-**Lint with flake8:**
-```bash
-flake8 rpc_tester/
-```
-
-**Type check with mypy:**
-```bash
-mypy rpc_tester/
-```
-
-### 4. Run Tests
-
-Always run tests before submitting:
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=rpc_tester --cov-report=html
-
-# Run specific test file
-pytest tests/test_core.py
-
-# Run async tests
-pytest tests/test_integration.py -v
-```
-
-### 5. Commit Messages
-
-Write clear, descriptive commit messages:
-
-```
-Add feature: Brief description
-
-Longer explanation of what changed and why.
-Describe the problem this solves or the feature it adds.
-
-- Bullet points for multiple changes
-- Reference issues with #123
-```
-
-**Good examples:**
-```
-Add WebSocket support for real-time testing
-
-Implemented WebSocketTester class with subscription support.
-Enables testing of WebSocket RPC endpoints and real-time
-event monitoring.
-
-Fixes #45
-```
-
-```
-Fix rate limiting edge case
-
-Fixed issue where rate limiter could allow burst beyond
-configured limit when tokens accumulated during idle periods.
-
-Closes #67
-```
-
-### 6. Push and Create Pull Request
-
-```bash
-git push origin feature/your-feature-name
-```
-
-Then create a pull request on GitHub.
+6. **Submit PR:**
+   - Explain what the example demonstrates
+   - Include screenshots if applicable
 
 ## 🧪 Testing Guidelines
 
-### Writing Tests
+### Language-Specific Tests
 
-- Place tests in the `tests/` directory
-- Name test files with `test_` prefix
-- Use descriptive test function names
-- Test both success and failure cases
-- Use fixtures for common setup
+- **Solidity**: Use Hardhat or Foundry tests
+- **Rust**: Use `cargo test` and Anchor tests
+- **TypeScript**: Use Jest or Vitest
+- **Go**: Use `go test`
+- **Python**: Use pytest
+- **Java**: Use JUnit
 
-**Example test:**
-```python
-import pytest
-from rpc_tester.core import RPCTester
+Example test structure:
 
-@pytest.mark.asyncio
-async def test_endpoint_success(sample_config):
-    """Test successful RPC request."""
-    async with RPCTester(sample_config) as tester:
-        result = await tester.test_endpoint(
-            "https://eth.llamarpc.com",
-            "eth_blockNumber"
-        )
-        assert result is not None
-        assert len(result) > 0
+```bash
+languages/your-language/
+├── src/
+├── tests/
+│   └── test_example.ext
+├── README.md
+└── package.json  # or equivalent
 ```
 
-### Test Coverage
+## 📦 Pull Request Process
 
-- Aim for >80% code coverage
-- Test edge cases and error conditions
-- Mock external dependencies
-- Use parametrize for multiple test cases
+1. **Update documentation:**
+   - Update relevant READMEs
+   - Add your changes to CHANGELOG.md
 
-## 📚 Documentation
+2. **Ensure quality:**
+   - Code compiles/runs successfully
+   - Tests pass (if applicable)
+   - No linting errors
+   - Documentation is clear
 
-### Docstrings
+3. **Create PR:**
+   - Use a descriptive title
+   - Explain what changes you made and why
+   - Reference any related issues
+   - Add screenshots/demos if applicable
 
-Use Google-style docstrings:
+4. **Review process:**
+   - Address reviewer feedback
+   - Make requested changes
+   - Keep PR focused and atomic
 
-```python
-def calculate_percentile(data: List[float], percentile: float) -> float:
-    """
-    Calculate percentile value from data.
+## 🎯 What We're Looking For
 
-    Args:
-        data: List of numeric values
-        percentile: Percentile to calculate (0.0-1.0)
+### High Priority
 
-    Returns:
-        Calculated percentile value
+- ✅ Examples in new languages (Kotlin, Swift, C#, etc.)
+- ✅ More advanced smart contract patterns
+- ✅ Additional DApp frontend examples
+- ✅ Integration examples (oracles, bridges, etc.)
+- ✅ Performance optimizations
 
-    Raises:
-        ValueError: If percentile is out of range
+### Medium Priority
 
-    Example:
-        >>> calculate_percentile([1, 2, 3, 4, 5], 0.95)
-        4.8
-    """
-    pass
-```
+- ✅ Enhanced error handling
+- ✅ More comprehensive tests
+- ✅ CI/CD improvements
+- ✅ Documentation improvements
 
-### README Updates
+### Nice to Have
 
-Update README.md when adding:
-- New features
-- New CLI options
-- New configuration options
-- Breaking changes
+- ✅ Video tutorials
+- ✅ Blog posts / articles
+- ✅ Translations
+- ✅ Infographics
 
-## 🐛 Bug Reports
+## 🤝 Code of Conduct
 
-When reporting bugs, include:
+Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md). We are committed to providing a welcoming and inspiring community for all.
 
-1. **Description:** Clear description of the bug
-2. **Steps to Reproduce:** Minimal steps to reproduce
-3. **Expected Behavior:** What should happen
-4. **Actual Behavior:** What actually happens
-5. **Environment:**
-   - Python version
-   - OS version
-   - Package version
+## 💬 Community
 
-**Template:**
-```markdown
-## Bug Description
-Brief description of the bug.
-
-## Steps to Reproduce
-1. Run command: `python -m rpc_tester ...`
-2. Observe error
-
-## Expected Behavior
-Should successfully test endpoint.
-
-## Actual Behavior
-Raises ConnectionError.
-
-## Environment
-- Python: 3.11.2
-- OS: Ubuntu 22.04
-- Version: 2.0.0
-```
-
-## ✨ Feature Requests
-
-When requesting features:
-
-1. **Use Case:** Describe the problem/use case
-2. **Proposed Solution:** How should it work?
-3. **Alternatives:** Other approaches considered
-4. **Additional Context:** Examples, mockups, etc.
-
-## 🔍 Code Review Process
-
-Pull requests are reviewed for:
-
-1. **Functionality:** Does it work as intended?
-2. **Tests:** Are there adequate tests?
-3. **Documentation:** Is it documented?
-4. **Code Style:** Does it follow conventions?
-5. **Performance:** Are there performance implications?
-6. **Security:** Are there security concerns?
-
-## 📋 Checklist
-
-Before submitting a PR, ensure:
-
-- [ ] Code follows style guidelines (black, isort, flake8)
-- [ ] All tests pass
-- [ ] New tests added for new features
-- [ ] Documentation updated
-- [ ] Commit messages are clear
-- [ ] Branch is up to date with main
-- [ ] No merge conflicts
-
-## 🤝 Community Guidelines
-
-- Be respectful and inclusive
-- Provide constructive feedback
-- Help others learn and grow
-- Follow the code of conduct
-
-## 📞 Getting Help
-
-- **Issues:** Open an issue for bugs or features
-- **Discussions:** Use GitHub Discussions for questions
-- **Email:** Contact maintainers for security issues
+- **Issues**: Report bugs or request features
+- **Discussions**: Ask questions, share ideas
+- **Discord**: [Join our community](https://discord.gg/your-invite) (if applicable)
 
 ## 📄 License
 
@@ -294,8 +212,12 @@ By contributing, you agree that your contributions will be licensed under the MI
 ## 🙏 Recognition
 
 Contributors will be recognized in:
-- CHANGELOG.md for their contributions
 - README.md contributors section
+- Release notes
 - GitHub contributors page
 
-Thank you for contributing to MegaETH RPC Tester!
+Thank you for making Web3 development more accessible! 🚀
+
+---
+
+**Questions?** Open an issue or start a discussion. We're here to help!

@@ -1,0 +1,20 @@
+# Code Owners
+# These owners will be requested for review when someone opens a pull request
+
+# Global owners
+* @pavlenkotm
+
+# Language-specific owners
+/languages/solidity/ @pavlenkotm
+/languages/typescript/ @pavlenkotm
+/languages/rust/ @pavlenkotm
+/languages/go/ @pavlenkotm
+/languages/python/ @pavlenkotm
+/languages/java/ @pavlenkotm
+
+# Documentation
+*.md @pavlenkotm
+/docs/ @pavlenkotm
+
+# CI/CD
+/.github/ @pavlenkotm

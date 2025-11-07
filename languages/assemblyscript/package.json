@@ -1,0 +1,13 @@
+{
+  "name": "web3-assemblyscript",
+  "version": "1.0.0",
+  "description": "Web3 utilities compiled to WebAssembly",
+  "scripts": {
+    "asbuild": "asc assembly/index.ts --target release --outFile build/optimized.wasm",
+    "asbuild:debug": "asc assembly/index.ts --target debug --outFile build/debug.wasm",
+    "test": "node tests/index.js"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.27.0"
+  }
+}
