@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.0] - 2025-11-07
+
+### Major Release: Multi-Language Web3 Playground
+
+This release transforms the repository into a comprehensive showcase of Web3 development across 14+ programming languages.
+
+#### New Languages & Examples (14 total)
+
+**Smart Contract Languages:**
+- **Solidity**: ERC-20 and ERC-721 implementations with Hardhat
+- **Vyper**: Secure vault and token contracts with Brownie
+- **Rust**: Solana SPL token program using Anchor framework
+- **Move**: Aptos token module with comprehensive tests
+
+**Frontend & Application:**
+- **TypeScript**: React components (WalletConnect, useContract, web3Utils)
+- **JavaScript**: Web3 utilities and Ethers.js integration
+- **HTML/CSS**: Professional DApp landing page with MetaMask
+
+**Backend & Clients:**
+- **Go**: Full RPC client with go-ethereum
+- **Java**: Enterprise Web3j integration with Maven
+- **Ruby**: Elegant RPC client wrapper
+
+**Low-Level & Systems:**
+- **C++**: Cryptographic utilities (SHA-256, ECDSA, secp256k1)
+- **Zig**: WASM-compatible Web3 utilities
+- **AssemblyScript**: WebAssembly modules
+- **Haskell**: Functional type-safe RPC client
+
+**DevOps:**
+- **Bash**: Deployment scripts and node management
+
+#### Documentation
+- Comprehensive multi-language README
+- Individual READMEs for all 14+ languages
+- CODE_OF_CONDUCT.md (Contributor Covenant)
+- Updated CONTRIBUTING.md for multi-language contributions
+- Detailed setup and usage guides
+
+#### CI/CD
+- Multi-language GitHub Actions pipeline
+- Automated testing for 10+ languages
+- Code quality checks and linting
+- Build verification across all platforms
+
+#### Infrastructure
+- Organized `languages/` directory structure
+- Consistent documentation patterns
+- Package manager configs for all languages
+- Build systems (CMake, Cargo, Maven, npm, etc.)
+
 ## [3.0.0] - 2025-11-06
 
 ### Major Release: Enterprise Features & Advanced Analytics
