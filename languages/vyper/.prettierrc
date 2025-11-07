@@ -1,0 +1,13 @@
+{
+  "tabWidth": 4,
+  "useTabs": false,
+  "printWidth": 100,
+  "overrides": [
+    {
+      "files": "*.vy",
+      "options": {
+        "parser": "python"
+      }
+    }
+  ]
+}
