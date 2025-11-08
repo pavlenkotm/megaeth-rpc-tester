@@ -1,0 +1,43 @@
+name: Update Language Stats
+
+on:
+  push:
+    branches: [ main, master ]
+  schedule:
+    # Run weekly on Sundays at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Count languages
+        id: count
+        run: |
+          # Count language directories
+          LANG_COUNT=$(ls languages/ | grep -v "\.md$" | wc -l)
+          echo "Language count: $LANG_COUNT"
+          echo "count=$LANG_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Update README badge
+        run: |
+          COUNT="${{ steps.count.outputs.count }}"
+          sed -i "s/languages-[0-9]\++-/languages-${COUNT}+-/" README.md
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update language count to ${{ steps.count.outputs.count }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

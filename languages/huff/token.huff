@@ -1,0 +1,147 @@
+/// @title Minimal ERC-20 Token in Huff
+/// @notice Ultra gas-optimized token implementation
+
+// Interface
+#define function balanceOf(address) view returns (uint256)
+#define function transfer(address,uint256) nonpayable returns (bool)
+#define function totalSupply() view returns (uint256)
+#define function mint(address,uint256) nonpayable returns (bool)
+
+// Events
+#define event Transfer(address indexed from, address indexed to, uint256 value)
+
+// Storage slots
+#define constant TOTAL_SUPPLY_SLOT = FREE_STORAGE_POINTER()
+
+// Main macro
+#define macro MAIN() = takes (0) returns (0) {
+    // Get function selector
+    0x00 calldataload 0xE0 shr
+
+    dup1 0x70a08231 eq balance_of jumpi
+    dup1 0xa9059cbb eq transfer jumpi
+    dup1 0x18160ddd eq total_supply jumpi
+    dup1 0x40c10f19 eq mint jumpi
+
+    // Revert if no match
+    0x00 0x00 revert
+
+    balance_of:
+        BALANCE_OF()
+
+    transfer:
+        TRANSFER()
+
+    total_supply:
+        TOTAL_SUPPLY()
+
+    mint:
+        MINT()
+}
+
+// balanceOf(address) - Get balance of account
+#define macro BALANCE_OF() = takes (0) returns (0) {
+    0x04 calldataload              // [account]
+    LOAD_BALANCE()                 // [balance]
+    0x00 mstore                    // []
+    0x20 0x00 return               // return balance
+}
+
+// transfer(address,uint256) - Transfer tokens
+#define macro TRANSFER() = takes (0) returns (0) {
+    0x04 calldataload              // [to]
+    0x24 calldataload              // [amount, to]
+
+    // Get caller balance
+    caller                         // [from, amount, to]
+    dup1                          // [from, from, amount, to]
+    LOAD_BALANCE()                // [from_balance, from, amount, to]
+
+    // Check sufficient balance
+    dup3 dup2 lt                  // [from_balance < amount, from_balance, from, amount, to]
+    error jumpi                    // [from_balance, from, amount, to]
+
+    // Deduct from sender
+    dup3 swap1 sub                // [new_from_balance, from, amount, to]
+    dup2                          // [from, new_from_balance, from, amount, to]
+    STORE_BALANCE()               // [from, amount, to]
+
+    // Add to recipient
+    dup3 LOAD_BALANCE()           // [to_balance, from, amount, to]
+    dup3 add                      // [new_to_balance, from, amount, to]
+    dup4                          // [to, new_to_balance, from, amount, to]
+    STORE_BALANCE()               // [from, amount, to]
+
+    // Emit Transfer event
+    EMIT_TRANSFER()               // []
+
+    // Return true
+    0x01 0x00 mstore
+    0x20 0x00 return
+
+    error:
+        0x00 0x00 revert
+}
+
+// totalSupply() - Get total supply
+#define macro TOTAL_SUPPLY() = takes (0) returns (0) {
+    [TOTAL_SUPPLY_SLOT] sload
+    0x00 mstore
+    0x20 0x00 return
+}
+
+// mint(address,uint256) - Mint new tokens
+#define macro MINT() = takes (0) returns (0) {
+    0x04 calldataload              // [to]
+    0x24 calldataload              // [amount, to]
+
+    // Add to recipient balance
+    dup2 LOAD_BALANCE()           // [to_balance, amount, to]
+    dup2 add                      // [new_balance, amount, to]
+    dup3                          // [to, new_balance, amount, to]
+    STORE_BALANCE()               // [amount, to]
+
+    // Update total supply
+    [TOTAL_SUPPLY_SLOT] sload     // [supply, amount, to]
+    dup2 add                      // [new_supply, amount, to]
+    [TOTAL_SUPPLY_SLOT] sstore    // [amount, to]
+
+    // Emit Transfer from 0x0
+    0x00                          // [from, amount, to]
+    swap2                         // [to, amount, from]
+    swap1                         // [amount, to, from]
+    EMIT_TRANSFER()               // []
+
+    // Return true
+    0x01 0x00 mstore
+    0x20 0x00 return
+}
+
+// Helper: Load balance from storage
+#define macro LOAD_BALANCE() = takes (1) returns (1) {
+    // [account]
+    0x00 mstore                    // []
+    0x01 0x20 mstore              // [] (slot 1 for balances mapping)
+    0x40 0x00 sha3                // [storage_slot]
+    sload                         // [balance]
+}
+
+// Helper: Store balance to storage
+#define macro STORE_BALANCE() = takes (2) returns (0) {
+    // [account, balance]
+    swap1                         // [balance, account]
+    0x00 mstore                   // [balance]
+    0x01 0x20 mstore             // [balance]
+    0x40 0x00 sha3               // [storage_slot, balance]
+    sstore                        // []
+}
+
+// Helper: Emit Transfer event
+#define macro EMIT_TRANSFER() = takes (3) returns (0) {
+    // [from, amount, to]
+    swap1                         // [amount, from, to]
+    0x00 mstore                   // [from, to]
+    __EVENT_HASH(Transfer)        // [sig, from, to]
+    0x20 0x00                     // [0, 32, sig, from, to]
+    log3                          // []
+}

@@ -1,0 +1,9 @@
+[package]
+name = "cairo_examples"
+version = "0.1.0"
+edition = "2023_10"
+
+[dependencies]
+starknet = ">=2.3.0"
+
+[[target.starknet-contract]]

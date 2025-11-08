@@ -1,0 +1,8 @@
+[project]
+authors = ["Web3 Developer"]
+entry = "main.sw"
+license = "MIT"
+name = "sway_token"
+
+[dependencies]
+std = { git = "https://github.com/FuelLabs/sway", tag = "v0.46.0" }
