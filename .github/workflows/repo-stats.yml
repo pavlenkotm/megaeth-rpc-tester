@@ -1,0 +1,68 @@
+name: Repository Statistics
+
+on:
+  push:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight
+  workflow_dispatch:
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Calculate statistics
+        id: stats
+        run: |
+          # Count files by language
+          echo "## Repository Statistics" > STATS.md
+          echo "" >> STATS.md
+          echo "Last updated: $(date)" >> STATS.md
+          echo "" >> STATS.md
+
+          # Language directories
+          LANG_DIRS=$(ls -d languages/*/ 2>/dev/null | wc -l)
+          echo "📚 Total Languages: $LANG_DIRS" >> STATS.md
+
+          # Total commits
+          COMMITS=$(git rev-list --count HEAD)
+          echo "💾 Total Commits: $COMMITS" >> STATS.md
+
+          # Contributors
+          CONTRIBUTORS=$(git log --format='%aN' | sort -u | wc -l)
+          echo "👥 Contributors: $CONTRIBUTORS" >> STATS.md
+
+          # Total lines of code
+          TOTAL_LINES=$(find languages -type f \( -name "*.sol" -o -name "*.rs" -o -name "*.ts" -o -name "*.py" -o -name "*.go" \) -exec wc -l {} + | tail -1 | awk '{print $1}')
+          echo "📝 Lines of Code: $TOTAL_LINES" >> STATS.md
+
+          # Most recent activity
+          LAST_COMMIT=$(git log -1 --format="%ci")
+          echo "🕐 Last Commit: $LAST_COMMIT" >> STATS.md
+
+          echo "" >> STATS.md
+          echo "### Language Breakdown" >> STATS.md
+          for dir in languages/*/; do
+            lang=$(basename "$dir")
+            files=$(find "$dir" -type f ! -name "README.md" | wc -l)
+            echo "- **$lang**: $files files" >> STATS.md
+          done
+
+      - name: Commit stats
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add STATS.md
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update repository statistics"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

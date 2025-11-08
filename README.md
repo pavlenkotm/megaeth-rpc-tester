@@ -1,49 +1,94 @@
 # 🌐 Web3 Multi-Language Playground
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Languages](https://img.shields.io/badge/languages-14+-green.svg)
+![Languages](https://img.shields.io/badge/languages-40+-brightgreen.svg)
 ![Commits](https://img.shields.io/github/commit-activity/m/pavlenkotm/megaeth-rpc-tester)
 ![Stars](https://img.shields.io/github/stars/pavlenkotm/megaeth-rpc-tester)
+![Web3](https://img.shields.io/badge/Web3-Blockchain-orange)
+![Ethereum](https://img.shields.io/badge/Ethereum-Solana-blue)
 
-**A comprehensive showcase of Web3 development across 14+ programming languages**
+**The Ultimate Web3 Development Portfolio: 40+ Programming Languages**
 
-This repository demonstrates professional Web3 development patterns, smart contracts, DApp frontends, blockchain utilities, and cryptographic implementations across the most popular languages in the Web3 ecosystem.
+This repository demonstrates professional Web3 development patterns, smart contracts, DApp frontends, blockchain utilities, and cryptographic implementations across **40+ programming languages** — the most comprehensive multi-language blockchain development showcase on GitHub.
 
 ---
 
 ## 🎯 Overview
 
-This is a **multi-language Web3 development portfolio** featuring real-world examples, production-ready code, and best practices for:
+This is the **world's most comprehensive multi-language Web3 development portfolio** featuring real-world examples across **40+ programming languages**, production-ready code, and best practices for:
 
-- ✅ Smart contract development (Solidity, Vyper, Move, Rust/Anchor)
-- ✅ DApp frontend development (TypeScript, HTML/CSS, JavaScript)
-- ✅ Blockchain client implementations (Go, Java, Ruby, Python)
-- ✅ Low-level cryptography (C++, Zig, AssemblyScript)
-- ✅ Functional programming (Haskell)
-- ✅ DevOps and deployment (Bash scripts)
+- ✅ **Smart Contract Languages** (Solidity, Vyper, Sway, Cairo, Yul, Huff, Clarity, Ligo, Move)
+- ✅ **Modern Blockchain Platforms** (Solana/Rust, Aptos/Move, Stacks/Clarity, Fuel/Sway, StarkNet/Cairo, Internet Computer/Motoko)
+- ✅ **DApp Frontend** (TypeScript, JavaScript, Dart/Flutter, Swift/iOS, Elm, HTML/CSS)
+- ✅ **Enterprise Backend** (Kotlin, Scala, Java, Go, C++, Elixir, Erlang, F#, OCaml)
+- ✅ **Functional Programming** (Haskell, Clojure, F#, OCaml, Elm, Elixir, Erlang, Scala)
+- ✅ **Systems Programming** (Rust, C++, Zig, Nim, Crystal, D, AssemblyScript)
+- ✅ **Scripting & Automation** (Python, Ruby, Bash, Lua, Perl, PowerShell, PHP, R, Julia)
 
 ---
 
-## 📚 Languages & Technologies
+## 📚 All 40+ Languages & Technologies
 
-| Language | Use Case | Location | Features |
+### 🔷 Smart Contract Languages (9)
+| Language | Platform | Location | Key Features |
+|----------|----------|----------|--------------|
+| **Solidity** | Ethereum | [`languages/solidity/`](languages/solidity/) | ERC-20, ERC-721, Hardhat |
+| **Vyper** | Ethereum | [`languages/vyper/`](languages/vyper/) | Secure Contracts, Brownie |
+| **Sway** | Fuel | [`languages/sway/`](languages/sway/) | FuelVM, Modern Syntax |
+| **Cairo** | StarkNet | [`languages/cairo/`](languages/cairo/) | ZK-Rollups, Cairo 2.0 |
+| **Move** | Aptos/Sui | [`languages/move/`](languages/move/) | Resource-Oriented |
+| **Clarity** | Stacks | [`languages/clarity/`](languages/clarity/) | Bitcoin DeFi |
+| **Ligo** | Tezos | [`languages/ligo/`](languages/ligo/) | FA2 Tokens |
+| **Yul** | Ethereum | [`languages/yul/`](languages/yul/) | Gas Optimized |
+| **Huff** | Ethereum | [`languages/huff/`](languages/huff/) | Direct EVM Opcodes |
+
+### 🦀 Systems & Performance (8)
+| Language | Type | Location | Use Case |
+|----------|------|----------|----------|
+| **Rust** | Systems | [`languages/rust/`](languages/rust/) | Solana Programs |
+| **C++** | Systems | [`languages/cpp/`](languages/cpp/) | Cryptography |
+| **Zig** | Systems | [`languages/zig/`](languages/zig/) | WASM, Performance |
+| **Nim** | Systems | [`languages/nim/`](languages/nim/) | Python-like, Fast |
+| **Crystal** | Systems | [`languages/crystal/`](languages/crystal/) | Ruby-like, Compiled |
+| **D** | Systems | [`languages/dlang/`](languages/dlang/) | Modern C++ |
+| **AssemblyScript** | WASM | [`languages/assemblyscript/`](languages/assemblyscript/) | TypeScript to WASM |
+| **Motoko** | Internet Computer | [`languages/motoko/`](languages/motoko/) | ICP Canisters |
+
+### 🎨 Modern Application Languages (6)
+| Language | Platform | Location | Specialty |
+|----------|----------|----------|-----------|
+| **TypeScript** | Web | [`languages/typescript/`](languages/typescript/) | React DApps |
+| **Kotlin** | JVM | [`languages/kotlin/`](languages/kotlin/) | Android, Backend |
+| **Swift** | iOS/macOS | [`languages/swift/`](languages/swift/) | Mobile Wallets |
+| **Dart** | Flutter | [`languages/dart/`](languages/dart/) | Cross-platform |
+| **Go** | Backend | [`languages/go/`](languages/go/) | RPC Clients |
+| **Java** | Enterprise | [`languages/java/`](languages/java/) | Web3j |
+
+### 🧠 Functional Programming (7)
+| Language | Paradigm | Location | Features |
 |----------|----------|----------|----------|
-| **Solidity** | Smart Contracts | [`languages/solidity/`](languages/solidity/) | ERC-20, ERC-721, Hardhat |
-| **Vyper** | Secure Contracts | [`languages/vyper/`](languages/vyper/) | Vault, ERC-20, Brownie |
-| **Rust** | Solana Programs | [`languages/rust/`](languages/rust/) | Anchor, SPL Tokens |
-| **Move** | Aptos/Sui | [`languages/move/`](languages/move/) | Token Module, Tests |
-| **TypeScript** | DApp Frontend | [`languages/typescript/`](languages/typescript/) | React, Ethers.js, Wagmi |
-| **JavaScript** | Web3 Integration | [`languages/html-css/`](languages/html-css/) | Wallet Connect, UI |
-| **Go** | RPC Client | [`languages/go/`](languages/go/) | go-ethereum, Transactions |
-| **Python** | RPC Tester | [`rpc_tester/`](rpc_tester/) | Async, Metrics, Reporting |
-| **Java** | Enterprise Backend | [`languages/java/`](languages/java/) | Web3j, Maven |
-| **C++** | Cryptography | [`languages/cpp/`](languages/cpp/) | OpenSSL, ECDSA, Hashing |
-| **Bash** | DevOps | [`languages/bash/`](languages/bash/) | Deploy, Node Management |
-| **Ruby** | Scripting | [`languages/ruby/`](languages/ruby/) | RPC Client, Balance Checker |
-| **Zig** | Systems/WASM | [`languages/zig/`](languages/zig/) | Low-level Utils, Performance |
-| **AssemblyScript** | WebAssembly | [`languages/assemblyscript/`](languages/assemblyscript/) | WASM Modules |
-| **Haskell** | Functional | [`languages/haskell/`](languages/haskell/) | Type-safe RPC |
-| **HTML/CSS** | Landing Pages | [`languages/html-css/`](languages/html-css/) | Responsive Design |
+| **Haskell** | Pure FP | [`languages/haskell/`](languages/haskell/) | Type Safety |
+| **Scala** | Functional/OO | [`languages/scala/`](languages/scala/) | Cats Effect |
+| **Clojure** | Lisp | [`languages/clojure/`](languages/clojure/) | Immutable Data |
+| **Elixir** | Concurrent | [`languages/elixir/`](languages/elixir/) | Phoenix, OTP |
+| **Erlang** | Concurrent | [`languages/erlang/`](languages/erlang/) | Distributed |
+| **F#** | .NET FP | [`languages/fsharp/`](languages/fsharp/) | Railway Pattern |
+| **OCaml** | ML Family | [`languages/ocaml/`](languages/ocaml/) | Type Inference |
+| **Elm** | Frontend FP | [`languages/elm/`](languages/elm/) | No Runtime Errors |
+
+### 📜 Scripting & Automation (10)
+| Language | Domain | Location | Strength |
+|----------|--------|----------|----------|
+| **Python** | General | [`rpc_tester/`](rpc_tester/) | Data Analysis |
+| **Ruby** | Scripting | [`languages/ruby/`](languages/ruby/) | Elegant Syntax |
+| **Bash** | Shell | [`languages/bash/`](languages/bash/) | DevOps |
+| **Lua** | Embedded | [`languages/lua/`](languages/lua/) | Lightweight |
+| **Perl** | Text Processing | [`languages/perl/`](languages/perl/) | CPAN |
+| **PowerShell** | Windows | [`languages/powershell/`](languages/powershell/) | Automation |
+| **PHP** | Web | [`languages/php/`](languages/php/) | Backend |
+| **R** | Statistics | [`languages/r/`](languages/r/) | Data Science |
+| **Julia** | Scientific | [`languages/julia/`](languages/julia/) | Performance |
+| **JavaScript** | Web | [`languages/html-css/`](languages/html-css/) | Frontend |
 
 ---
 
@@ -284,11 +329,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Repository Stats
 
-- **14+ Programming Languages**
-- **40+ Meaningful Commits**
-- **Professional Code Quality**
-- **Comprehensive Documentation**
-- **Production-Ready Examples**
+- **40+ Programming Languages** 🌍
+- **9 Blockchain Platforms** (Ethereum, Solana, Aptos, Fuel, StarkNet, Stacks, Tezos, ICP, Sui)
+- **Multiple Paradigms** (Functional, OOP, Systems, Scripting)
+- **Production-Ready Code** across all languages
+- **Comprehensive Documentation** for each implementation
+- **Real-World Examples** (RPC clients, smart contracts, DApp components)
+- **Best Practices** for modern Web3 development
 
 ---
 

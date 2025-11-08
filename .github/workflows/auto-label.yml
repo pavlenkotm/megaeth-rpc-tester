@@ -1,0 +1,67 @@
+name: Auto Label Issues and PRs
+
+on:
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Label based on content
+        uses: actions/labeler@v4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Language-specific labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = context.payload.issue?.title || context.payload.pull_request?.title || '';
+            const body = context.payload.issue?.body || context.payload.pull_request?.body || '';
+            const content = (title + ' ' + body).toLowerCase();
+
+            const languageLabels = {
+              'solidity': 'lang: solidity',
+              'rust': 'lang: rust',
+              'cairo': 'lang: cairo',
+              'move': 'lang: move',
+              'typescript': 'lang: typescript',
+              'python': 'lang: python',
+              'go': 'lang: go',
+              'kotlin': 'lang: kotlin',
+              'scala': 'lang: scala',
+              'haskell': 'lang: haskell',
+              'elixir': 'lang: elixir'
+            };
+
+            const labels = [];
+            for (const [keyword, label] of Object.entries(languageLabels)) {
+              if (content.includes(keyword)) {
+                labels.push(label);
+              }
+            }
+
+            // Add category labels
+            if (content.includes('bug') || content.includes('error') || content.includes('issue')) {
+              labels.push('bug');
+            }
+            if (content.includes('feature') || content.includes('enhancement')) {
+              labels.push('enhancement');
+            }
+            if (content.includes('doc') || content.includes('readme')) {
+              labels.push('documentation');
+            }
+
+            if (labels.length > 0) {
+              const issueNumber = context.payload.issue?.number || context.payload.pull_request?.number;
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                labels: labels
+              });
+            }

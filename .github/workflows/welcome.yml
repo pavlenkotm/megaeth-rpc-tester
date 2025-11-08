@@ -1,0 +1,44 @@
+name: Welcome New Contributors
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Welcome new contributors
+        uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            👋 Welcome to the Web3 Multi-Language Playground!
+
+            Thank you for opening your first issue! We appreciate your contribution to this project.
+
+            This repository showcases Web3 development across 40+ programming languages. If you're interested in:
+            - Adding a new language implementation
+            - Improving existing code
+            - Fixing bugs or adding features
+            - Enhancing documentation
+
+            Please check our [CONTRIBUTING.md](CONTRIBUTING.md) guide for details.
+
+            We'll review your issue soon. Thanks again! 🚀
+
+          pr-message: |
+            🎉 Congratulations on your first Pull Request!
+
+            Thank you for contributing to the Web3 Multi-Language Playground! Your PR will be reviewed soon.
+
+            Please make sure:
+            - ✅ Your code follows the project's coding standards
+            - ✅ You've added appropriate tests (if applicable)
+            - ✅ You've updated documentation (if needed)
+            - ✅ Your commits follow conventional commit format
+
+            We appreciate your contribution! 🙏
