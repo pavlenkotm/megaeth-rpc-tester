@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
  * @title Web3NFT
@@ -20,9 +19,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * - Whitelist minting
  */
 contract Web3NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
-    using Counters for Counters.Counter;
-
-    Counters.Counter private _tokenIdCounter;
+    uint256 private _tokenIdCounter;
 
     uint256 public constant MAX_SUPPLY = 10000;
     uint256 public constant MINT_PRICE = 0.05 ether;
@@ -49,7 +46,7 @@ contract Web3NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
      * @param uri Metadata URI for the token
      */
     function mint(string memory uri) public payable {
-        require(_tokenIdCounter.current() < MAX_SUPPLY, "Web3NFT: max supply reached");
+        require(_tokenIdCounter < MAX_SUPPLY, "Web3NFT: max supply reached");
         require(msg.value >= MINT_PRICE, "Web3NFT: insufficient payment");
         require(mintedPerWallet[msg.sender] < MAX_PER_WALLET, "Web3NFT: max per wallet reached");
 
@@ -57,8 +54,8 @@ contract Web3NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
             require(whitelist[msg.sender], "Web3NFT: not whitelisted");
         }
 
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 tokenId = _tokenIdCounter;
+        _tokenIdCounter++;
         mintedPerWallet[msg.sender]++;
 
         _safeMint(msg.sender, tokenId);
@@ -72,11 +69,11 @@ contract Web3NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
      */
     function batchMint(address[] calldata recipients, string[] calldata uris) external onlyOwner {
         require(recipients.length == uris.length, "Web3NFT: arrays length mismatch");
-        require(_tokenIdCounter.current() + recipients.length <= MAX_SUPPLY, "Web3NFT: would exceed max supply");
+        require(_tokenIdCounter + recipients.length <= MAX_SUPPLY, "Web3NFT: would exceed max supply");
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIdCounter;
+            _tokenIdCounter++;
             _safeMint(recipients[i], tokenId);
             _setTokenURI(tokenId, uris[i]);
             emit NFTMinted(recipients[i], tokenId, uris[i]);
@@ -120,7 +117,7 @@ contract Web3NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
      * @dev Get total minted supply
      */
     function totalSupply() public view returns (uint256) {
-        return _tokenIdCounter.current();
+        return _tokenIdCounter;
     }
 
     // Required overrides

@@ -19,13 +19,13 @@ async function connectWallet() {
 
         userAddress = accounts[0];
 
-        // Initialize provider and signer
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        signer = provider.getSigner();
+        // Initialize provider and signer (ethers.js v6)
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
 
         // Get balance
         const balance = await provider.getBalance(userAddress);
-        const balanceInEth = ethers.utils.formatEther(balance);
+        const balanceInEth = ethers.formatEther(balance);
 
         // Get network
         const network = await provider.getNetwork();
