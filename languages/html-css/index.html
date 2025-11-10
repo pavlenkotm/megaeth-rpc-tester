@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional Web3 DApp - Connect your wallet and interact with the blockchain">
+    <title>Web3 DApp - Decentralized Application</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Ethers.js v6 CDN -->
+    <script src="https://cdn.ethers.io/lib/ethers-6.7.0.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>Web3 DApp</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#docs">Docs</a>
+                <button id="connectButton" class="btn btn-primary" onclick="connectWallet()">
+                    Connect Wallet
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Welcome to the Future of Web3</h1>
+                <p class="hero-subtitle">
+                    Experience decentralized applications built on Ethereum blockchain.
+                    Connect your wallet to get started.
+                </p>
+
+                <!-- Wallet Connection Area -->
+                <div id="walletConnect" class="wallet-section">
+                    <button class="btn btn-large" onclick="connectWallet()">
+                        Connect Your Wallet
+                    </button>
+                    <p class="wallet-hint">Supports MetaMask, WalletConnect, and more</p>
+                </div>
+
+                <!-- Wallet Info (Hidden by default) -->
+                <div id="walletInfo" class="wallet-info" style="display: none;">
+                    <div class="info-card">
+                        <div class="info-row">
+                            <span class="info-label">Address:</span>
+                            <span class="info-value" id="walletAddress">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Balance:</span>
+                            <span class="info-value" id="walletBalance">0 ETH</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Network:</span>
+                            <span class="info-value" id="walletNetwork">-</span>
+                        </div>
+                        <button class="btn btn-secondary" onclick="disconnectWallet()">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">$100M+</div>
+                    <div class="stat-label">Total Value Locked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Transactions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Decentralized</h3>
+                    <p>Built on Ethereum blockchain with smart contract security audits</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Optimized for speed with Layer 2 scaling solutions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <h3>Low Fees</h3>
+                    <p>Minimal gas costs with efficient smart contract design</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Multi-Chain Support</h3>
+                    <p>Works with Ethereum, Polygon, Arbitrum, and more</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Ready</h3>
+                    <p>Fully responsive design for all devices</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>Developer Friendly</h3>
+                    <p>Comprehensive API and documentation</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">About This DApp</h2>
+            <div class="about-content">
+                <p>
+                    This is a professional Web3 decentralized application built with modern
+                    web technologies and Ethereum blockchain integration. Connect your wallet
+                    to interact with smart contracts, send transactions, and explore the
+                    decentralized web.
+                </p>
+                <div class="tech-stack">
+                    <h3>Built With</h3>
+                    <div class="tech-tags">
+                        <span class="tag">Solidity</span>
+                        <span class="tag">Ethers.js</span>
+                        <span class="tag">HTML5/CSS3</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Ethereum</span>
+                        <span class="tag">Web3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="docs">
+        <div class="container">
+            <h2 class="section-title">Quick Start</h2>
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <h3>1. Install MetaMask</h3>
+                    <p>Download and install the MetaMask browser extension from metamask.io</p>
+                </div>
+                <div class="doc-card">
+                    <h3>2. Connect Wallet</h3>
+                    <p>Click the "Connect Wallet" button and approve the connection in MetaMask</p>
+                </div>
+                <div class="doc-card">
+                    <h3>3. Get Test ETH</h3>
+                    <p>For testing, get free testnet ETH from a faucet (Sepolia, Goerli, etc.)</p>
+                </div>
+                <div class="doc-card">
+                    <h3>4. Start Using</h3>
+                    <p>Interact with smart contracts and explore decentralized features</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Web3 DApp</h3>
+                    <p>Building the decentralized future, one block at a time.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Twitter</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">License</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Forum</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Web3 DApp. All rights reserved. Built with Ethereum.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
