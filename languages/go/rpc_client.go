@@ -13,11 +13,14 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// RPCClient is a Go client for interacting with Ethereum RPC endpoints
+// RPCClient is a Go client for interacting with Ethereum RPC endpoints.
+// It provides methods for querying blockchain data, sending transactions,
+// and verifying signatures with comprehensive error handling.
 type RPCClient struct {
 	client     *ethclient.Client
 	privateKey *ecdsa.PrivateKey
 	address    common.Address
+	rpcURL     string
 }
 
 // NewRPCClient creates a new RPC client instance
@@ -51,7 +54,25 @@ func NewRPCClient(rpcURL string, privateKeyHex string) (*RPCClient, error) {
 		client:     client,
 		privateKey: privateKey,
 		address:    address,
+		rpcURL:     rpcURL,
 	}, nil
+}
+
+// Close closes the RPC client connection
+func (r *RPCClient) Close() {
+	if r.client != nil {
+		r.client.Close()
+	}
+}
+
+// GetAddress returns the client's Ethereum address
+func (r *RPCClient) GetAddress() common.Address {
+	return r.address
+}
+
+// GetRPCURL returns the RPC URL being used
+func (r *RPCClient) GetRPCURL() string {
+	return r.rpcURL
 }
 
 // GetBlockNumber retrieves the latest block number
