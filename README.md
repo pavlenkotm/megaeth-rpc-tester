@@ -1,21 +1,22 @@
 # 🌐 Web3 Multi-Language Playground
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Languages](https://img.shields.io/badge/languages-40+-brightgreen.svg)
+![Languages](https://img.shields.io/badge/languages-45+-brightgreen.svg)
 ![Commits](https://img.shields.io/github/commit-activity/m/pavlenkotm/megaeth-rpc-tester)
 ![Stars](https://img.shields.io/github/stars/pavlenkotm/megaeth-rpc-tester)
 ![Web3](https://img.shields.io/badge/Web3-Blockchain-orange)
 ![Ethereum](https://img.shields.io/badge/Ethereum-Solana-blue)
+![Esoteric](https://img.shields.io/badge/Esoteric-Languages-purple)
 
-**The Ultimate Web3 Development Portfolio: 40+ Programming Languages**
+**The Ultimate Web3 Development Portfolio: 45+ Programming Languages (Including Esoteric!)**
 
-This repository demonstrates professional Web3 development patterns, smart contracts, DApp frontends, blockchain utilities, and cryptographic implementations across **40+ programming languages** — the most comprehensive multi-language blockchain development showcase on GitHub.
+This repository demonstrates professional Web3 development patterns, smart contracts, DApp frontends, blockchain utilities, and cryptographic implementations across **45+ programming languages** — including mind-bending esoteric languages like Brainfuck, LOLCODE, and ArnoldC — the most comprehensive and entertaining multi-language blockchain development showcase on GitHub.
 
 ---
 
 ## 🎯 Overview
 
-This is the **world's most comprehensive multi-language Web3 development portfolio** featuring real-world examples across **40+ programming languages**, production-ready code, and best practices for:
+This is the **world's most comprehensive multi-language Web3 development portfolio** featuring real-world examples across **45+ programming languages**, production-ready code, and best practices for:
 
 - ✅ **Smart Contract Languages** (Solidity, Vyper, Sway, Cairo, Yul, Huff, Clarity, Ligo, Move)
 - ✅ **Modern Blockchain Platforms** (Solana/Rust, Aptos/Move, Stacks/Clarity, Fuel/Sway, StarkNet/Cairo, Internet Computer/Motoko)
@@ -24,10 +25,11 @@ This is the **world's most comprehensive multi-language Web3 development portfol
 - ✅ **Functional Programming** (Haskell, Clojure, F#, OCaml, Elm, Elixir, Erlang, Scala)
 - ✅ **Systems Programming** (Rust, C++, Zig, Nim, Crystal, D, AssemblyScript)
 - ✅ **Scripting & Automation** (Python, Ruby, Bash, Lua, Perl, PowerShell, PHP, R, Julia)
+- ✨ **Esoteric Languages** (Brainfuck, Whitespace, LOLCODE, ArnoldC, Befunge)
 
 ---
 
-## 📚 All 40+ Languages & Technologies
+## 📚 All 45+ Languages & Technologies
 
 ### 🔷 Smart Contract Languages (9)
 | Language | Platform | Location | Key Features |
@@ -89,6 +91,15 @@ This is the **world's most comprehensive multi-language Web3 development portfol
 | **R** | Statistics | [`languages/r/`](languages/r/) | Data Science |
 | **Julia** | Scientific | [`languages/julia/`](languages/julia/) | Performance |
 | **JavaScript** | Web | [`languages/html-css/`](languages/html-css/) | Frontend |
+
+### 🎭 Esoteric Languages (5) - For Fun & Education!
+| Language | Type | Location | Unique Feature |
+|----------|------|----------|----------------|
+| **Brainfuck** | Minimalist | [`languages/brainfuck/`](languages/brainfuck/) | Only 8 commands |
+| **Whitespace** | Invisible | [`languages/whitespace/`](languages/whitespace/) | Only spaces/tabs/linefeeds |
+| **LOLCODE** | Meme-based | [`languages/lolcode/`](languages/lolcode/) | LOLcat speak syntax |
+| **ArnoldC** | Movie quotes | [`languages/arnoldc/`](languages/arnoldc/) | Arnold Schwarzenegger |
+| **Befunge** | 2D | [`languages/befunge/`](languages/befunge/) | Two-dimensional code |
 
 ---
 
@@ -329,13 +340,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Repository Stats
 
-- **40+ Programming Languages** 🌍
+- **45+ Programming Languages** 🌍 (Including 5 Esoteric Languages!)
 - **9 Blockchain Platforms** (Ethereum, Solana, Aptos, Fuel, StarkNet, Stacks, Tezos, ICP, Sui)
-- **Multiple Paradigms** (Functional, OOP, Systems, Scripting)
-- **Production-Ready Code** across all languages
+- **Multiple Paradigms** (Functional, OOP, Systems, Scripting, Esoteric)
+- **Production-Ready Code** across all practical languages
+- **Educational Esoteric Examples** (Brainfuck, Whitespace, LOLCODE, ArnoldC, Befunge)
 - **Comprehensive Documentation** for each implementation
 - **Real-World Examples** (RPC clients, smart contracts, DApp components)
 - **Best Practices** for modern Web3 development
+- **Fun & Creative** approach to blockchain education
 
 ---
 
