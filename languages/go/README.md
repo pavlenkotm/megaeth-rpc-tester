@@ -1,6 +1,6 @@
-# 🐹 Go Web3 Examples
+# 🐹 Go Blockchain Development
 
-Professional Go examples for Ethereum RPC interaction and signature verification using go-ethereum.
+Professional Go examples for blockchain development, including Ethereum RPC interaction and Cosmos SDK module development.
 
 ## 📋 Contents
 
@@ -10,6 +10,13 @@ Professional Go examples for Ethereum RPC interaction and signature verification
   - Send transactions
   - Signature verification
   - Transaction receipt monitoring
+
+- **cosmos_module.go** - Cosmos SDK custom module
+  - Custom token creation
+  - Token minting functionality
+  - State management with KVStore
+  - Message handlers and validation
+  - Integration with bank keeper
 
 ## 🚀 Quick Start
 
@@ -28,29 +35,38 @@ cd languages/go
 go mod download
 ```
 
-### Build
+### Ethereum RPC Client
 
 ```bash
-# Build the binary
-go build -o rpc-client .
+# Build the RPC client
+go build -o rpc-client rpc_client.go
 
-# Run directly
+# Run
+./rpc-client
+
+# Or run directly
 go run rpc_client.go
 ```
 
-### Usage Examples
+### Cosmos SDK Module
 
 ```bash
-# Run the example
-./rpc-client
+# Install Cosmos SDK
+go get github.com/cosmos/cosmos-sdk@latest
 
-# Or run with go run
-go run rpc_client.go
+# Build your chain with the module
+go build -o mychain .
+
+# Initialize chain
+./mychain init mynode --chain-id mychain-1
+
+# Start the chain
+./mychain start
 ```
 
 ## 🔧 Features
 
-### RPC Client
+### Ethereum RPC Client
 
 - **Block Information**: Get latest block number and block details
 - **Balance Queries**: Check ETH balance of any address
@@ -59,15 +75,26 @@ go run rpc_client.go
 - **Transaction Sending**: Send ETH transactions (with private key)
 - **Receipt Monitoring**: Wait for transaction confirmations
 
-### Signature Verification
+### Ethereum Signature Verification
 
 - **Sign Messages**: Create Ethereum signatures
 - **Verify Signatures**: Validate message authenticity
 - **Recover Addresses**: Extract signer address from signature
 
+### Cosmos SDK Module
+
+- **Custom Tokens**: Create native tokens on Cosmos chains
+- **Token Minting**: Mint additional supply (if allowed)
+- **State Management**: Efficient KVStore operations
+- **Message Validation**: Type-safe message handling
+- **Bank Integration**: Seamless token transfers
+- **Queries**: Retrieve token metadata and balances
+
 ## 📚 Code Examples
 
-### Create RPC Client
+### Ethereum Examples
+
+#### Create RPC Client
 
 ```go
 client, err := NewRPCClient("https://eth.llamarpc.com", "")
@@ -109,7 +136,7 @@ value := big.NewInt(1000000000000000000) // 1 ETH
 tx, err := client.SendTransaction(ctx, to, value)
 ```
 
-### Verify Signature
+#### Verify Signature
 
 ```go
 message := []byte("Hello, Ethereum!")
@@ -122,7 +149,48 @@ if isValid {
 }
 ```
 
+### Cosmos SDK Examples
+
+#### Create Custom Token
+
+```go
+msg := MsgCreateToken{
+    Creator:     creatorAddr,
+    Denom:       "mytoken",
+    TotalSupply: sdk.NewInt(1000000),
+    Mintable:    true,
+}
+
+err := keeper.CreateToken(ctx, msg)
+```
+
+#### Mint Tokens
+
+```go
+msg := MsgMintToken{
+    Minter: ownerAddr,
+    Denom:  "mytoken",
+    Amount: sdk.NewInt(5000),
+    To:     recipientAddr,
+}
+
+err := keeper.MintToken(ctx, msg)
+```
+
+#### Query Token Info
+
+```go
+token, err := keeper.GetToken(ctx, "mytoken")
+if err == nil {
+    fmt.Printf("Token: %s\n", token.Denom)
+    fmt.Printf("Supply: %s\n", token.TotalSupply)
+    fmt.Printf("Owner: %s\n", token.Owner)
+}
+```
+
 ## 🧪 Testing
+
+### Ethereum Client Tests
 
 ```bash
 # Run tests
@@ -135,14 +203,28 @@ go test -cover ./...
 go test -v ./...
 ```
 
+### Cosmos SDK Module Tests
+
+```bash
+# Run module tests
+go test -v ./x/customtoken/...
+
+# Integration tests
+go test -v ./app/...
+
+# Simulation tests
+go test -v -run TestFullAppSimulation
+```
+
 ## 📖 Project Structure
 
 ```
 go/
-├── rpc_client.go    # Main RPC client implementation
-├── go.mod           # Go module definition
-├── go.sum           # Dependency checksums
-└── README.md        # This file
+├── rpc_client.go      # Ethereum RPC client
+├── cosmos_module.go   # Cosmos SDK module
+├── go.mod             # Go module definition
+├── go.sum             # Dependency checksums
+└── README.md          # This file
 ```
 
 ## 🔐 Security Best Practices
@@ -154,19 +236,40 @@ go/
 - Use context timeouts for RPC calls
 - Verify transaction receipts
 
+## 🌐 Blockchain Support
+
+- **Ethereum**: EVM-compatible chains (Ethereum, Polygon, BSC, etc.)
+- **Cosmos SDK**: Cosmos Hub, Osmosis, Terra, Juno, Akash, etc.
+
 ## 📚 Learn More
 
+### Ethereum
 - [go-ethereum Documentation](https://geth.ethereum.org/docs)
 - [Go Ethereum Book](https://goethereumbook.org/)
 - [Ethereum JSON-RPC Spec](https://ethereum.org/en/developers/docs/apis/json-rpc/)
 
+### Cosmos SDK
+- [Cosmos SDK Documentation](https://docs.cosmos.network/)
+- [Cosmos Academy](https://academy.cosmos.network/)
+- [Cosmos SDK Tutorials](https://tutorials.cosmos.network/)
+- [IBC Protocol](https://ibcprotocol.org/)
+
 ## 🎯 Use Cases
 
+### Ethereum
 - **RPC Testing Tools**: Monitor endpoint health and performance
 - **Blockchain Explorers**: Build custom blockchain data viewers
 - **Trading Bots**: Automated transaction sending
 - **Wallet Backends**: Manage accounts and balances
 - **DApp Backends**: Server-side Web3 integration
+
+### Cosmos SDK
+- **Custom Blockchains**: Build application-specific chains
+- **DeFi Protocols**: DEXs, lending, staking platforms
+- **NFT Marketplaces**: Native NFT support
+- **Gaming**: High-performance gaming chains
+- **Interoperability**: IBC-enabled cross-chain applications
+- **DAOs**: On-chain governance and voting
 
 ## 📄 License
 

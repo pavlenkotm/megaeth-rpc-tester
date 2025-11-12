@@ -1,0 +1,24 @@
+[package]
+name = "erc20_ink"
+version = "0.1.0"
+authors = ["Web3 Developer"]
+edition = "2021"
+
+[dependencies]
+ink = { version = "5.0.0", default-features = false }
+
+[lib]
+path = "lib.rs"
+crate-type = ["cdylib"]
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+]
+ink-as-dependency = []
+
+[profile.release]
+overflow-checks = false
+panic = "abort"
+lto = true
