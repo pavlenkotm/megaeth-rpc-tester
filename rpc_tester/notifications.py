@@ -4,22 +4,28 @@ Notification system for sending alerts about test results.
 Supports email and webhook notifications for test completion and alerts.
 """
 
-import smtplib
-import json
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 import asyncio
+import json
+import smtplib
+from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Any, Dict, List, Optional
+
 import aiohttp
 
 
 class EmailNotifier:
     """Send email notifications for test results."""
 
-    def __init__(self, smtp_host: str, smtp_port: int = 587,
-                 username: Optional[str] = None, password: Optional[str] = None,
-                 use_tls: bool = True):
+    def __init__(
+        self,
+        smtp_host: str,
+        smtp_port: int = 587,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        use_tls: bool = True,
+    ):
         """
         Initialize email notifier.
 
@@ -36,8 +42,7 @@ class EmailNotifier:
         self.password = password
         self.use_tls = use_tls
 
-    async def send_test_completion(self, recipient: str, subject: str,
-                                   results: Dict[str, Any]):
+    async def send_test_completion(self, recipient: str, subject: str, results: Dict[str, Any]):
         """
         Send test completion notification.
 
@@ -49,8 +54,13 @@ class EmailNotifier:
         body = self._format_results_email(results)
         await self._send_email(recipient, subject, body)
 
-    async def send_alert(self, recipient: str, alert_type: str,
-                        message: str, details: Optional[Dict[str, Any]] = None):
+    async def send_alert(
+        self,
+        recipient: str,
+        alert_type: str,
+        message: str,
+        details: Optional[Dict[str, Any]] = None,
+    ):
         """
         Send alert notification.
 
@@ -101,18 +111,13 @@ MegaETH RPC Tester - Test Results
     async def _send_email(self, recipient: str, subject: str, body: str):
         """Send email using SMTP."""
         msg = MIMEMultipart()
-        msg['From'] = self.username or "rpc-tester@localhost"
-        msg['To'] = recipient
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
+        msg["From"] = self.username or "rpc-tester@localhost"
+        msg["To"] = recipient
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "plain"))
 
         # Run SMTP operations in thread pool to avoid blocking
-        await asyncio.get_event_loop().run_in_executor(
-            None,
-            self._smtp_send,
-            recipient,
-            msg
-        )
+        await asyncio.get_event_loop().run_in_executor(None, self._smtp_send, recipient, msg)
 
     def _smtp_send(self, recipient: str, msg: MIMEMultipart):
         """Send email via SMTP (blocking operation)."""
@@ -151,9 +156,7 @@ class WebhookNotifier:
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(
-                    self.webhook_url,
-                    json=payload,
-                    headers=self.headers
+                    self.webhook_url, json=payload, headers=self.headers
                 ) as response:
                     if response.status >= 400:
                         print(f"Webhook notification failed: {response.status}")
@@ -168,14 +171,15 @@ class WebhookNotifier:
             results: Test results dictionary
         """
         payload = {
-            'event': 'test_completion',
-            'timestamp': datetime.now().isoformat(),
-            'results': results
+            "event": "test_completion",
+            "timestamp": datetime.now().isoformat(),
+            "results": results,
         }
         await self.send_notification(payload)
 
-    async def send_alert(self, alert_type: str, message: str,
-                        details: Optional[Dict[str, Any]] = None):
+    async def send_alert(
+        self, alert_type: str, message: str, details: Optional[Dict[str, Any]] = None
+    ):
         """
         Send alert notification.
 
@@ -185,11 +189,11 @@ class WebhookNotifier:
             details: Additional alert details
         """
         payload = {
-            'event': 'alert',
-            'alert_type': alert_type,
-            'message': message,
-            'timestamp': datetime.now().isoformat(),
-            'details': details or {}
+            "event": "alert",
+            "alert_type": alert_type,
+            "message": message,
+            "timestamp": datetime.now().isoformat(),
+            "details": details or {},
         }
         await self.send_notification(payload)
 
@@ -201,23 +205,27 @@ class NotificationManager:
         """Initialize notification manager."""
         self.notifiers: List[Any] = []
 
-    def add_email_notifier(self, smtp_host: str, smtp_port: int = 587,
-                          username: Optional[str] = None,
-                          password: Optional[str] = None):
+    def add_email_notifier(
+        self,
+        smtp_host: str,
+        smtp_port: int = 587,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ):
         """Add email notifier."""
         notifier = EmailNotifier(smtp_host, smtp_port, username, password)
         self.notifiers.append(notifier)
         return notifier
 
-    def add_webhook_notifier(self, webhook_url: str,
-                            headers: Optional[Dict[str, str]] = None):
+    def add_webhook_notifier(self, webhook_url: str, headers: Optional[Dict[str, str]] = None):
         """Add webhook notifier."""
         notifier = WebhookNotifier(webhook_url, headers)
         self.notifiers.append(notifier)
         return notifier
 
-    async def notify_test_completion(self, results: Dict[str, Any],
-                                     email_recipients: Optional[List[str]] = None):
+    async def notify_test_completion(
+        self, results: Dict[str, Any], email_recipients: Optional[List[str]] = None
+    ):
         """
         Notify all channels about test completion.
 
@@ -231,11 +239,7 @@ class NotificationManager:
             if isinstance(notifier, EmailNotifier) and email_recipients:
                 for recipient in email_recipients:
                     tasks.append(
-                        notifier.send_test_completion(
-                            recipient,
-                            "RPC Test Results",
-                            results
-                        )
+                        notifier.send_test_completion(recipient, "RPC Test Results", results)
                     )
             elif isinstance(notifier, WebhookNotifier):
                 tasks.append(notifier.send_test_completion(results))
@@ -243,9 +247,13 @@ class NotificationManager:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def notify_alert(self, alert_type: str, message: str,
-                          details: Optional[Dict[str, Any]] = None,
-                          email_recipients: Optional[List[str]] = None):
+    async def notify_alert(
+        self,
+        alert_type: str,
+        message: str,
+        details: Optional[Dict[str, Any]] = None,
+        email_recipients: Optional[List[str]] = None,
+    ):
         """
         Notify all channels about an alert.
 
@@ -260,9 +268,7 @@ class NotificationManager:
         for notifier in self.notifiers:
             if isinstance(notifier, EmailNotifier) and email_recipients:
                 for recipient in email_recipients:
-                    tasks.append(
-                        notifier.send_alert(recipient, alert_type, message, details)
-                    )
+                    tasks.append(notifier.send_alert(recipient, alert_type, message, details))
             elif isinstance(notifier, WebhookNotifier):
                 tasks.append(notifier.send_alert(alert_type, message, details))
 

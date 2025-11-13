@@ -4,15 +4,16 @@ Alert system for monitoring RPC test results.
 Trigger alerts when metrics exceed defined thresholds.
 """
 
-from typing import Dict, List, Optional, Any, Callable
+import asyncio
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-import asyncio
+from typing import Any, Callable, Dict, List, Optional
 
 
 class AlertLevel(Enum):
     """Alert severity levels."""
+
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -21,6 +22,7 @@ class AlertLevel(Enum):
 
 class MetricType(Enum):
     """Types of metrics that can be monitored."""
+
     LATENCY = "latency"
     SUCCESS_RATE = "success_rate"
     ERROR_RATE = "error_rate"
@@ -31,6 +33,7 @@ class MetricType(Enum):
 @dataclass
 class AlertThreshold:
     """Threshold configuration for alerts."""
+
     metric_type: MetricType
     operator: str  # >, <, >=, <=, ==
     value: float
@@ -41,6 +44,7 @@ class AlertThreshold:
 @dataclass
 class Alert:
     """Alert instance."""
+
     alert_id: str
     level: AlertLevel
     metric_type: MetricType
@@ -56,9 +60,9 @@ class Alert:
 class AlertRule:
     """Define rules for triggering alerts."""
 
-    def __init__(self, name: str, description: str,
-                 thresholds: List[AlertThreshold],
-                 enabled: bool = True):
+    def __init__(
+        self, name: str, description: str, thresholds: List[AlertThreshold], enabled: bool = True
+    ):
         """
         Initialize alert rule.
 
@@ -73,8 +77,7 @@ class AlertRule:
         self.thresholds = thresholds
         self.enabled = enabled
 
-    def evaluate(self, endpoint: str, method: str,
-                metrics: Dict[str, float]) -> List[Alert]:
+    def evaluate(self, endpoint: str, method: str, metrics: Dict[str, float]) -> List[Alert]:
         """
         Evaluate metrics against thresholds.
 
@@ -103,7 +106,7 @@ class AlertRule:
                     method=method,
                     metric=metric_name,
                     value=current_value,
-                    threshold=threshold.value
+                    threshold=threshold.value,
                 )
 
                 alert = Alert(
@@ -116,7 +119,7 @@ class AlertRule:
                     current_value=current_value,
                     threshold_value=threshold.value,
                     timestamp=datetime.now().isoformat(),
-                    metadata=metrics
+                    metadata=metrics,
                 )
 
                 alerts.append(alert)
@@ -126,15 +129,15 @@ class AlertRule:
     @staticmethod
     def _evaluate_condition(value: float, operator: str, threshold: float) -> bool:
         """Evaluate condition based on operator."""
-        if operator == '>':
+        if operator == ">":
             return value > threshold
-        elif operator == '<':
+        elif operator == "<":
             return value < threshold
-        elif operator == '>=':
+        elif operator == ">=":
             return value >= threshold
-        elif operator == '<=':
+        elif operator == "<=":
             return value <= threshold
-        elif operator == '==':
+        elif operator == "==":
             return abs(value - threshold) < 0.001  # Float comparison
         return False
 
@@ -165,8 +168,7 @@ class AlertManager:
         """
         self.handlers.append(handler)
 
-    async def evaluate_metrics(self, endpoint: str, method: str,
-                              metrics: Dict[str, float]):
+    async def evaluate_metrics(self, endpoint: str, method: str, metrics: Dict[str, float]):
         """
         Evaluate metrics and trigger alerts.
 
@@ -208,8 +210,9 @@ class AlertManager:
         self.suppression_rules[alert_key] = 1
         return False
 
-    def get_alert_history(self, limit: int = 100,
-                         level: Optional[AlertLevel] = None) -> List[Alert]:
+    def get_alert_history(
+        self, limit: int = 100, level: Optional[AlertLevel] = None
+    ) -> List[Alert]:
         """
         Get alert history.
 
@@ -237,21 +240,20 @@ class AlertManager:
                 thresholds=[
                     AlertThreshold(
                         metric_type=MetricType.LATENCY,
-                        operator='>',
+                        operator=">",
                         value=1000.0,  # 1 second
                         level=AlertLevel.WARNING,
-                        message_template="High latency detected on {endpoint} for {method}: {value:.2f}ms (threshold: {threshold}ms)"
+                        message_template="High latency detected on {endpoint} for {method}: {value:.2f}ms (threshold: {threshold}ms)",
                     ),
                     AlertThreshold(
                         metric_type=MetricType.LATENCY,
-                        operator='>',
+                        operator=">",
                         value=5000.0,  # 5 seconds
                         level=AlertLevel.CRITICAL,
-                        message_template="CRITICAL: Very high latency on {endpoint} for {method}: {value:.2f}ms (threshold: {threshold}ms)"
-                    )
-                ]
+                        message_template="CRITICAL: Very high latency on {endpoint} for {method}: {value:.2f}ms (threshold: {threshold}ms)",
+                    ),
+                ],
             ),
-
             # Low success rate rule
             AlertRule(
                 name="low_success_rate",
@@ -259,28 +261,27 @@ class AlertManager:
                 thresholds=[
                     AlertThreshold(
                         metric_type=MetricType.SUCCESS_RATE,
-                        operator='<',
+                        operator="<",
                         value=95.0,
                         level=AlertLevel.WARNING,
-                        message_template="Low success rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)"
+                        message_template="Low success rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)",
                     ),
                     AlertThreshold(
                         metric_type=MetricType.SUCCESS_RATE,
-                        operator='<',
+                        operator="<",
                         value=80.0,
                         level=AlertLevel.ERROR,
-                        message_template="Very low success rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)"
+                        message_template="Very low success rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)",
                     ),
                     AlertThreshold(
                         metric_type=MetricType.SUCCESS_RATE,
-                        operator='<',
+                        operator="<",
                         value=50.0,
                         level=AlertLevel.CRITICAL,
-                        message_template="CRITICAL: Success rate severely degraded on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)"
-                    )
-                ]
+                        message_template="CRITICAL: Success rate severely degraded on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)",
+                    ),
+                ],
             ),
-
             # High error rate rule
             AlertRule(
                 name="high_error_rate",
@@ -288,20 +289,20 @@ class AlertManager:
                 thresholds=[
                     AlertThreshold(
                         metric_type=MetricType.ERROR_RATE,
-                        operator='>',
+                        operator=">",
                         value=5.0,
                         level=AlertLevel.WARNING,
-                        message_template="High error rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)"
+                        message_template="High error rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)",
                     ),
                     AlertThreshold(
                         metric_type=MetricType.ERROR_RATE,
-                        operator='>',
+                        operator=">",
                         value=20.0,
                         level=AlertLevel.CRITICAL,
-                        message_template="CRITICAL: Very high error rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)"
-                    )
-                ]
-            )
+                        message_template="CRITICAL: Very high error rate on {endpoint} for {method}: {value:.2f}% (threshold: {threshold}%)",
+                    ),
+                ],
+            ),
         ]
 
         return rules
@@ -351,22 +352,19 @@ class AlertAggregator:
     def generate_summary(alerts: List[Alert]) -> Dict[str, Any]:
         """Generate alert summary statistics."""
         if not alerts:
-            return {
-                'total': 0,
-                'by_level': {},
-                'by_endpoint': {},
-                'by_metric': {}
-            }
+            return {"total": 0, "by_level": {}, "by_endpoint": {}, "by_metric": {}}
 
         by_level = AlertAggregator.aggregate_by_level(alerts)
         by_endpoint = AlertAggregator.aggregate_by_endpoint(alerts)
         by_metric = AlertAggregator.aggregate_by_metric(alerts)
 
         return {
-            'total': len(alerts),
-            'by_level': {level.value: len(alerts) for level, alerts in by_level.items() if alerts},
-            'by_endpoint': {endpoint: len(alerts) for endpoint, alerts in by_endpoint.items()},
-            'by_metric': {metric.value: len(alerts) for metric, alerts in by_metric.items() if alerts},
-            'oldest': min(alerts, key=lambda a: a.timestamp).timestamp if alerts else None,
-            'newest': max(alerts, key=lambda a: a.timestamp).timestamp if alerts else None
+            "total": len(alerts),
+            "by_level": {level.value: len(alerts) for level, alerts in by_level.items() if alerts},
+            "by_endpoint": {endpoint: len(alerts) for endpoint, alerts in by_endpoint.items()},
+            "by_metric": {
+                metric.value: len(alerts) for metric, alerts in by_metric.items() if alerts
+            },
+            "oldest": min(alerts, key=lambda a: a.timestamp).timestamp if alerts else None,
+            "newest": max(alerts, key=lambda a: a.timestamp).timestamp if alerts else None,
         }

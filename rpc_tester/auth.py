@@ -8,10 +8,9 @@ import base64
 import hashlib
 import hmac
 import time
-from typing import Dict, Optional, Any
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-import json
+from datetime import datetime
+from typing import Any, Dict, Optional
 
 
 class AuthHandler(ABC):
@@ -53,8 +52,13 @@ class NoAuth(AuthHandler):
 class APIKeyAuth(AuthHandler):
     """API key authentication."""
 
-    def __init__(self, api_key: str, header_name: str = "X-API-Key",
-                 in_query: bool = False, query_param: str = "api_key"):
+    def __init__(
+        self,
+        api_key: str,
+        header_name: str = "X-API-Key",
+        in_query: bool = False,
+        query_param: str = "api_key",
+    ):
         """
         Initialize API key auth.
 
@@ -100,9 +104,7 @@ class BasicAuth(AuthHandler):
         """Get authentication headers."""
         credentials = f"{self.username}:{self.password}"
         encoded = base64.b64encode(credentials.encode()).decode()
-        return {
-            "Authorization": f"Basic {encoded}"
-        }
+        return {"Authorization": f"Basic {encoded}"}
 
     def get_params(self) -> Dict[str, str]:
         """Get params (empty for Basic auth)."""
@@ -123,9 +125,7 @@ class BearerTokenAuth(AuthHandler):
 
     def get_headers(self) -> Dict[str, str]:
         """Get authentication headers."""
-        return {
-            "Authorization": f"Bearer {self.token}"
-        }
+        return {"Authorization": f"Bearer {self.token}"}
 
     def get_params(self) -> Dict[str, str]:
         """Get params (empty)."""
@@ -135,8 +135,12 @@ class BearerTokenAuth(AuthHandler):
 class JWTAuth(AuthHandler):
     """JWT (JSON Web Token) authentication."""
 
-    def __init__(self, token: str, refresh_token: Optional[str] = None,
-                 refresh_callback: Optional[callable] = None):
+    def __init__(
+        self,
+        token: str,
+        refresh_token: Optional[str] = None,
+        refresh_callback: Optional[callable] = None,
+    ):
         """
         Initialize JWT auth.
 
@@ -157,9 +161,7 @@ class JWTAuth(AuthHandler):
             if self.refresh_callback:
                 self.token = self.refresh_callback(self.refresh_token)
 
-        return {
-            "Authorization": f"Bearer {self.token}"
-        }
+        return {"Authorization": f"Bearer {self.token}"}
 
     def get_params(self) -> Dict[str, str]:
         """Get params (empty)."""
@@ -173,9 +175,13 @@ class JWTAuth(AuthHandler):
 class OAuth2Auth(AuthHandler):
     """OAuth 2.0 authentication."""
 
-    def __init__(self, access_token: str, token_type: str = "Bearer",
-                 refresh_token: Optional[str] = None,
-                 expires_at: Optional[datetime] = None):
+    def __init__(
+        self,
+        access_token: str,
+        token_type: str = "Bearer",
+        refresh_token: Optional[str] = None,
+        expires_at: Optional[datetime] = None,
+    ):
         """
         Initialize OAuth2 auth.
 
@@ -192,9 +198,7 @@ class OAuth2Auth(AuthHandler):
 
     def get_headers(self) -> Dict[str, str]:
         """Get authentication headers."""
-        return {
-            "Authorization": f"{self.token_type} {self.access_token}"
-        }
+        return {"Authorization": f"{self.token_type} {self.access_token}"}
 
     def get_params(self) -> Dict[str, str]:
         """Get params (empty)."""
@@ -210,8 +214,7 @@ class OAuth2Auth(AuthHandler):
 class HMACAuth(AuthHandler):
     """HMAC signature authentication."""
 
-    def __init__(self, access_key: str, secret_key: str,
-                 algorithm: str = "sha256"):
+    def __init__(self, access_key: str, secret_key: str, algorithm: str = "sha256"):
         """
         Initialize HMAC auth.
 
@@ -231,16 +234,10 @@ class HMACAuth(AuthHandler):
 
         # Calculate HMAC signature
         signature = hmac.new(
-            self.secret_key.encode(),
-            message.encode(),
-            getattr(hashlib, self.algorithm)
+            self.secret_key.encode(), message.encode(), getattr(hashlib, self.algorithm)
         ).hexdigest()
 
-        return {
-            "X-Access-Key": self.access_key,
-            "X-Timestamp": timestamp,
-            "X-Signature": signature
-        }
+        return {"X-Access-Key": self.access_key, "X-Timestamp": timestamp, "X-Signature": signature}
 
     def get_params(self) -> Dict[str, str]:
         """Get params (empty)."""
@@ -271,8 +268,13 @@ class CustomHeaderAuth(AuthHandler):
 class AWSSignatureAuth(AuthHandler):
     """AWS Signature Version 4 authentication."""
 
-    def __init__(self, access_key: str, secret_key: str,
-                 region: str = "us-east-1", service: str = "execute-api"):
+    def __init__(
+        self,
+        access_key: str,
+        secret_key: str,
+        region: str = "us-east-1",
+        service: str = "execute-api",
+    ):
         """
         Initialize AWS Signature auth.
 
@@ -291,11 +293,11 @@ class AWSSignatureAuth(AuthHandler):
         """Get authentication headers (simplified)."""
         # This is a simplified version
         # Full AWS SigV4 implementation would be more complex
-        timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
 
         return {
             "X-Amz-Date": timestamp,
-            "Authorization": f"AWS4-HMAC-SHA256 Credential={self.access_key}/..."
+            "Authorization": f"AWS4-HMAC-SHA256 Credential={self.access_key}/...",
         }
 
     def get_params(self) -> Dict[str, str]:
@@ -371,54 +373,44 @@ class AuthConfig:
         Returns:
             AuthHandler instance
         """
-        auth_type = config.get('type', 'none').lower()
+        auth_type = config.get("type", "none").lower()
 
-        if auth_type == 'none':
+        if auth_type == "none":
             return NoAuth()
 
-        elif auth_type == 'api_key':
+        elif auth_type == "api_key":
             return APIKeyAuth(
-                api_key=config['api_key'],
-                header_name=config.get('header_name', 'X-API-Key'),
-                in_query=config.get('in_query', False),
-                query_param=config.get('query_param', 'api_key')
+                api_key=config["api_key"],
+                header_name=config.get("header_name", "X-API-Key"),
+                in_query=config.get("in_query", False),
+                query_param=config.get("query_param", "api_key"),
             )
 
-        elif auth_type == 'basic':
-            return BasicAuth(
-                username=config['username'],
-                password=config['password']
-            )
+        elif auth_type == "basic":
+            return BasicAuth(username=config["username"], password=config["password"])
 
-        elif auth_type == 'bearer':
-            return BearerTokenAuth(
-                token=config['token']
-            )
+        elif auth_type == "bearer":
+            return BearerTokenAuth(token=config["token"])
 
-        elif auth_type == 'jwt':
-            return JWTAuth(
-                token=config['token'],
-                refresh_token=config.get('refresh_token')
-            )
+        elif auth_type == "jwt":
+            return JWTAuth(token=config["token"], refresh_token=config.get("refresh_token"))
 
-        elif auth_type == 'oauth2':
+        elif auth_type == "oauth2":
             return OAuth2Auth(
-                access_token=config['access_token'],
-                token_type=config.get('token_type', 'Bearer'),
-                refresh_token=config.get('refresh_token')
+                access_token=config["access_token"],
+                token_type=config.get("token_type", "Bearer"),
+                refresh_token=config.get("refresh_token"),
             )
 
-        elif auth_type == 'hmac':
+        elif auth_type == "hmac":
             return HMACAuth(
-                access_key=config['access_key'],
-                secret_key=config['secret_key'],
-                algorithm=config.get('algorithm', 'sha256')
+                access_key=config["access_key"],
+                secret_key=config["secret_key"],
+                algorithm=config.get("algorithm", "sha256"),
             )
 
-        elif auth_type == 'custom':
-            return CustomHeaderAuth(
-                headers=config['headers']
-            )
+        elif auth_type == "custom":
+            return CustomHeaderAuth(headers=config["headers"])
 
         else:
             raise ValueError(f"Unknown auth type: {auth_type}")
@@ -439,11 +431,12 @@ class AuthConfig:
 
         path = Path(file_path)
 
-        with open(path, 'r') as f:
-            if path.suffix in ['.json']:
+        with open(path, "r") as f:
+            if path.suffix in [".json"]:
                 config = json.load(f)
-            elif path.suffix in ['.yaml', '.yml']:
+            elif path.suffix in [".yaml", ".yml"]:
                 import yaml
+
                 config = yaml.safe_load(f)
             else:
                 raise ValueError(f"Unsupported file format: {path.suffix}")

@@ -2,12 +2,12 @@
 Structured logging configuration for RPC Tester.
 """
 
+import json
 import logging
 import sys
-import json
-from typing import Any, Dict
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict
 
 
 class JSONFormatter(logging.Formatter):
@@ -22,7 +22,7 @@ class JSONFormatter(logging.Formatter):
             "message": record.getMessage(),
             "module": record.module,
             "function": record.funcName,
-            "line": record.lineno
+            "line": record.lineno,
         }
 
         # Add exception info if present
@@ -40,13 +40,13 @@ class ColoredFormatter(logging.Formatter):
     """Colored formatter for console output."""
 
     COLORS = {
-        'DEBUG': '\033[36m',      # Cyan
-        'INFO': '\033[32m',       # Green
-        'WARNING': '\033[33m',    # Yellow
-        'ERROR': '\033[31m',      # Red
-        'CRITICAL': '\033[35m',   # Magenta
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
+        "CRITICAL": "\033[35m",  # Magenta
     }
-    RESET = '\033[0m'
+    RESET = "\033[0m"
 
     def format(self, record: logging.LogRecord) -> str:
         """Format log record with colors."""
@@ -78,11 +78,7 @@ class RPCLogger:
         self.logger.setLevel(logging.DEBUG)
         self._initialized = True
 
-    def setup_console_logging(
-        self,
-        level: int = logging.INFO,
-        use_colors: bool = True
-    ):
+    def setup_console_logging(self, level: int = logging.INFO, use_colors: bool = True):
         """
         Setup console logging handler.
 
@@ -100,23 +96,18 @@ class RPCLogger:
 
         if use_colors:
             formatter = ColoredFormatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
             )
         else:
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
             )
 
         console_handler.setFormatter(formatter)
         self.logger.addHandler(console_handler)
 
     def setup_file_logging(
-        self,
-        log_file: str = "rpc_tester.log",
-        level: int = logging.DEBUG,
-        use_json: bool = False
+        self, log_file: str = "rpc_tester.log", level: int = logging.DEBUG, use_json: bool = False
     ):
         """
         Setup file logging handler.
@@ -141,8 +132,8 @@ class RPCLogger:
             formatter = JSONFormatter()
         else:
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
+                "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
             )
 
         file_handler.setFormatter(formatter)
@@ -159,7 +150,7 @@ class RPCLogger:
         params: Any = None,
         latency_ms: float = None,
         success: bool = True,
-        error: str = None
+        error: str = None,
     ):
         """
         Log RPC request with structured data.
@@ -177,19 +168,18 @@ class RPCLogger:
             "method": method,
             "params": params,
             "latency_ms": latency_ms,
-            "success": success
+            "success": success,
         }
 
         if success:
             self.logger.info(
                 f"RPC request succeeded: {method} to {url} ({latency_ms:.2f}ms)",
-                extra={"extra": extra}
+                extra={"extra": extra},
             )
         else:
             extra["error"] = error
             self.logger.error(
-                f"RPC request failed: {method} to {url} - {error}",
-                extra={"extra": extra}
+                f"RPC request failed: {method} to {url} - {error}", extra={"extra": extra}
             )
 
     def log_test_start(self, config: Dict[str, Any]):
@@ -199,10 +189,7 @@ class RPCLogger:
         Args:
             config: Test configuration
         """
-        self.logger.info(
-            "Starting RPC tests",
-            extra={"extra": {"config": config}}
-        )
+        self.logger.info("Starting RPC tests", extra={"extra": {"config": config}})
 
     def log_test_complete(self, summary: Dict[str, Any]):
         """
@@ -211,23 +198,20 @@ class RPCLogger:
         Args:
             summary: Test summary statistics
         """
-        self.logger.info(
-            "RPC tests completed",
-            extra={"extra": {"summary": summary}}
-        )
+        self.logger.info("RPC tests completed", extra={"extra": {"summary": summary}})
 
     def log_cache_hit(self, url: str, method: str):
         """Log cache hit."""
         self.logger.debug(
             f"Cache hit for {method} to {url}",
-            extra={"extra": {"url": url, "method": method, "cache": "hit"}}
+            extra={"extra": {"url": url, "method": method, "cache": "hit"}},
         )
 
     def log_cache_miss(self, url: str, method: str):
         """Log cache miss."""
         self.logger.debug(
             f"Cache miss for {method} to {url}",
-            extra={"extra": {"url": url, "method": method, "cache": "miss"}}
+            extra={"extra": {"url": url, "method": method, "cache": "miss"}},
         )
 
 
@@ -242,7 +226,7 @@ def setup_logging(
     file_level: int = logging.DEBUG,
     log_file: str = None,
     use_json: bool = False,
-    use_colors: bool = True
+    use_colors: bool = True,
 ):
     """
     Setup logging configuration.
@@ -258,8 +242,4 @@ def setup_logging(
     rpc_logger.setup_console_logging(level=console_level, use_colors=use_colors)
 
     if log_file:
-        rpc_logger.setup_file_logging(
-            log_file=log_file,
-            level=file_level,
-            use_json=use_json
-        )
+        rpc_logger.setup_file_logging(log_file=log_file, level=file_level, use_json=use_json)

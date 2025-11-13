@@ -5,11 +5,13 @@ Custom exceptions for RPC Tester.
 
 class RPCTesterException(Exception):
     """Base exception for all RPC Tester errors."""
+
     pass
 
 
 class ConfigurationError(RPCTesterException):
     """Raised when configuration is invalid."""
+
     pass
 
 
@@ -42,6 +44,7 @@ class NetworkError(RPCTesterException):
 
 class ValidationError(RPCTesterException):
     """Raised when data validation fails."""
+
     pass
 
 

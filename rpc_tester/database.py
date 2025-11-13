@@ -4,13 +4,11 @@ Database integration module for storing test results.
 Supports SQLite and PostgreSQL for persistent storage of RPC test results.
 """
 
-import sqlite3
 import json
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-import asyncio
+import sqlite3
 from contextlib import asynccontextmanager
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 
 class DatabaseManager:
@@ -43,7 +41,8 @@ class DatabaseManager:
         cursor = self.connection.cursor()
 
         # Create test_runs table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS test_runs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp TEXT NOT NULL,
@@ -53,10 +52,12 @@ class DatabaseManager:
                 total_requests INTEGER,
                 duration_seconds REAL
             )
-        """)
+        """
+        )
 
         # Create test_results table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS test_results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 run_id INTEGER NOT NULL,
@@ -75,10 +76,12 @@ class DatabaseManager:
                 errors TEXT,
                 FOREIGN KEY (run_id) REFERENCES test_runs(id)
             )
-        """)
+        """
+        )
 
         # Create performance_metrics table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS performance_metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 result_id INTEGER NOT NULL,
@@ -88,7 +91,8 @@ class DatabaseManager:
                 error_message TEXT,
                 FOREIGN KEY (result_id) REFERENCES test_results(id)
             )
-        """)
+        """
+        )
 
         self.connection.commit()
 
@@ -110,26 +114,30 @@ class DatabaseManager:
         """
         if self.db_type == "sqlite":
             cursor = self.connection.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO test_runs (
                     timestamp, config, total_endpoints, total_methods,
                     total_requests, duration_seconds
                 ) VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                datetime.now().isoformat(),
-                json.dumps(config),
-                metadata.get('total_endpoints', 0),
-                metadata.get('total_methods', 0),
-                metadata.get('total_requests', 0),
-                metadata.get('duration_seconds', 0.0)
-            ))
+            """,
+                (
+                    datetime.now().isoformat(),
+                    json.dumps(config),
+                    metadata.get("total_endpoints", 0),
+                    metadata.get("total_methods", 0),
+                    metadata.get("total_requests", 0),
+                    metadata.get("duration_seconds", 0.0),
+                ),
+            )
             self.connection.commit()
             return cursor.lastrowid
 
         return -1
 
-    async def save_test_result(self, run_id: int, endpoint: str, method: str,
-                               results: Dict[str, Any]):
+    async def save_test_result(
+        self, run_id: int, endpoint: str, method: str, results: Dict[str, Any]
+    ):
         """
         Save individual test results.
 
@@ -141,31 +149,37 @@ class DatabaseManager:
         """
         if self.db_type == "sqlite":
             cursor = self.connection.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO test_results (
                     run_id, endpoint, method, total_requests,
                     successful_requests, failed_requests, success_rate,
                     avg_latency_ms, min_latency_ms, max_latency_ms,
                     p50_latency_ms, p95_latency_ms, p99_latency_ms, errors
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                run_id, endpoint, method,
-                results.get('total_requests', 0),
-                results.get('successful_requests', 0),
-                results.get('failed_requests', 0),
-                results.get('success_rate', 0.0),
-                results.get('avg_latency_ms', 0.0),
-                results.get('min_latency_ms', 0.0),
-                results.get('max_latency_ms', 0.0),
-                results.get('p50_latency_ms', 0.0),
-                results.get('p95_latency_ms', 0.0),
-                results.get('p99_latency_ms', 0.0),
-                json.dumps(results.get('errors', []))
-            ))
+            """,
+                (
+                    run_id,
+                    endpoint,
+                    method,
+                    results.get("total_requests", 0),
+                    results.get("successful_requests", 0),
+                    results.get("failed_requests", 0),
+                    results.get("success_rate", 0.0),
+                    results.get("avg_latency_ms", 0.0),
+                    results.get("min_latency_ms", 0.0),
+                    results.get("max_latency_ms", 0.0),
+                    results.get("p50_latency_ms", 0.0),
+                    results.get("p95_latency_ms", 0.0),
+                    results.get("p99_latency_ms", 0.0),
+                    json.dumps(results.get("errors", [])),
+                ),
+            )
             self.connection.commit()
 
-    async def get_test_history(self, endpoint: Optional[str] = None,
-                               limit: int = 10) -> List[Dict[str, Any]]:
+    async def get_test_history(
+        self, endpoint: Optional[str] = None, limit: int = 10
+    ) -> List[Dict[str, Any]]:
         """
         Get test history.
 
@@ -180,27 +194,32 @@ class DatabaseManager:
             cursor = self.connection.cursor()
 
             if endpoint:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT DISTINCT tr.* FROM test_runs tr
                     JOIN test_results res ON tr.id = res.run_id
                     WHERE res.endpoint = ?
                     ORDER BY tr.timestamp DESC
                     LIMIT ?
-                """, (endpoint, limit))
+                """,
+                    (endpoint, limit),
+                )
             else:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM test_runs
                     ORDER BY timestamp DESC
                     LIMIT ?
-                """, (limit,))
+                """,
+                    (limit,),
+                )
 
             columns = [desc[0] for desc in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         return []
 
-    async def get_endpoint_statistics(self, endpoint: str,
-                                     days: int = 7) -> Dict[str, Any]:
+    async def get_endpoint_statistics(self, endpoint: str, days: int = 7) -> Dict[str, Any]:
         """
         Get statistics for an endpoint over time.
 
@@ -213,7 +232,8 @@ class DatabaseManager:
         """
         if self.db_type == "sqlite":
             cursor = self.connection.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT
                     method,
                     AVG(avg_latency_ms) as avg_latency,
@@ -226,16 +246,14 @@ class DatabaseManager:
                     WHERE datetime(timestamp) > datetime('now', '-' || ? || ' days')
                 )
                 GROUP BY method
-            """, (endpoint, days))
+            """,
+                (endpoint, days),
+            )
 
             columns = [desc[0] for desc in cursor.description]
             results = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-            return {
-                'endpoint': endpoint,
-                'period_days': days,
-                'methods': results
-            }
+            return {"endpoint": endpoint, "period_days": days, "methods": results}
 
         return {}
 
@@ -247,8 +265,7 @@ class DatabaseManager:
 
 
 @asynccontextmanager
-async def get_db_manager(db_path: str = "rpc_test_results.db",
-                         db_type: str = "sqlite"):
+async def get_db_manager(db_path: str = "rpc_test_results.db", db_type: str = "sqlite"):
     """
     Context manager for database operations.
 

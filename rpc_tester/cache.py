@@ -5,10 +5,10 @@ Caching mechanism for RPC test results.
 import hashlib
 import json
 import time
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
 
 
 @dataclass
@@ -42,11 +42,7 @@ class ResultCache:
 
     def _generate_key(self, url: str, method: str, params: Optional[list] = None) -> str:
         """Generate cache key from request parameters."""
-        key_data = {
-            "url": url,
-            "method": method,
-            "params": params or []
-        }
+        key_data = {"url": url, "method": method, "params": params or []}
         key_str = json.dumps(key_data, sort_keys=True)
         return hashlib.sha256(key_str.encode()).hexdigest()
 
@@ -82,7 +78,7 @@ class ResultCache:
         method: str,
         data: Any,
         params: Optional[list] = None,
-        ttl: Optional[float] = None
+        ttl: Optional[float] = None,
     ):
         """
         Store result in cache.
@@ -95,12 +91,7 @@ class ResultCache:
             ttl: Custom time-to-live (uses default if not specified)
         """
         key = self._generate_key(url, method, params)
-        entry = CacheEntry(
-            key=key,
-            data=data,
-            timestamp=time.time(),
-            ttl=ttl or self.default_ttl
-        )
+        entry = CacheEntry(key=key, data=data, timestamp=time.time(), ttl=ttl or self.default_ttl)
         self._cache[key] = entry
 
     def clear(self):
@@ -111,10 +102,7 @@ class ResultCache:
 
     def clear_expired(self):
         """Remove expired entries from cache."""
-        expired_keys = [
-            key for key, entry in self._cache.items()
-            if entry.is_expired()
-        ]
+        expired_keys = [key for key, entry in self._cache.items() if entry.is_expired()]
         for key in expired_keys:
             del self._cache[key]
 
@@ -128,7 +116,7 @@ class ResultCache:
             "hits": self.hits,
             "misses": self.misses,
             "hit_rate": hit_rate,
-            "total_requests": total_requests
+            "total_requests": total_requests,
         }
 
 
@@ -157,7 +145,7 @@ class PersistentCache(ResultCache):
         cache_file = self._get_cache_file()
         if cache_file.exists():
             try:
-                with open(cache_file, 'r') as f:
+                with open(cache_file, "r") as f:
                     data = json.load(f)
                     for key, entry_data in data.items():
                         entry = CacheEntry(**entry_data)
@@ -175,7 +163,7 @@ class PersistentCache(ResultCache):
             if not entry.is_expired():
                 data[key] = asdict(entry)
 
-        with open(cache_file, 'w') as f:
+        with open(cache_file, "w") as f:
             json.dump(data, f)
 
     def set(
@@ -184,7 +172,7 @@ class PersistentCache(ResultCache):
         method: str,
         data: Any,
         params: Optional[list] = None,
-        ttl: Optional[float] = None
+        ttl: Optional[float] = None,
     ):
         """Store result in cache and persist to disk."""
         super().set(url, method, data, params, ttl)

@@ -4,9 +4,9 @@ Additional export formats for test results.
 Support for Markdown, XML, and other export formats.
 """
 
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 import xml.etree.ElementTree as ET
+from datetime import datetime
+from typing import Any, Dict, List
 from xml.dom import minidom
 
 
@@ -14,8 +14,7 @@ class MarkdownExporter:
     """Export test results to Markdown format."""
 
     @staticmethod
-    def export(results: Dict[str, Any], output_path: str,
-              include_charts: bool = False):
+    def export(results: Dict[str, Any], output_path: str, include_charts: bool = False):
         """
         Export results to Markdown file.
 
@@ -26,7 +25,7 @@ class MarkdownExporter:
         """
         md_content = MarkdownExporter._generate_markdown(results, include_charts)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(md_content)
 
     @staticmethod
@@ -38,35 +37,34 @@ class MarkdownExporter:
             f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             "",
             "---",
-            ""
+            "",
         ]
 
         # Summary section
         total_endpoints = len(results)
         total_tests = sum(len(methods) for methods in results.values())
 
-        lines.extend([
-            "## Summary",
-            "",
-            f"- **Total Endpoints Tested:** {total_endpoints}",
-            f"- **Total Tests Performed:** {total_tests}",
-            ""
-        ])
+        lines.extend(
+            [
+                "## Summary",
+                "",
+                f"- **Total Endpoints Tested:** {total_endpoints}",
+                f"- **Total Tests Performed:** {total_tests}",
+                "",
+            ]
+        )
 
         # Results by endpoint
         for endpoint, methods in results.items():
-            lines.extend([
-                f"## Endpoint: `{endpoint}`",
-                "",
-                "### Test Results",
-                ""
-            ])
+            lines.extend([f"## Endpoint: `{endpoint}`", "", "### Test Results", ""])
 
             # Create table
-            lines.extend([
-                "| Method | Requests | Success Rate | Avg Latency | P95 | P99 |",
-                "|--------|----------|--------------|-------------|-----|-----|"
-            ])
+            lines.extend(
+                [
+                    "| Method | Requests | Success Rate | Avg Latency | P95 | P99 |",
+                    "|--------|----------|--------------|-------------|-----|-----|",
+                ]
+            )
 
             for method, stats in methods.items():
                 row = (
@@ -82,43 +80,40 @@ class MarkdownExporter:
             lines.append("")
 
             # Detailed metrics
-            lines.extend([
-                "### Detailed Metrics",
-                ""
-            ])
+            lines.extend(["### Detailed Metrics", ""])
 
             for method, stats in methods.items():
-                lines.extend([
-                    f"#### `{method}`",
-                    "",
-                    "| Metric | Value |",
-                    "|--------|-------|",
-                    f"| Total Requests | {stats.get('total_requests', 0)} |",
-                    f"| Successful | {stats.get('successful_requests', 0)} |",
-                    f"| Failed | {stats.get('failed_requests', 0)} |",
-                    f"| Success Rate | {stats.get('success_rate', 0):.2f}% |",
-                    f"| Min Latency | {stats.get('min_latency_ms', 0):.2f}ms |",
-                    f"| Max Latency | {stats.get('max_latency_ms', 0):.2f}ms |",
-                    f"| Avg Latency | {stats.get('avg_latency_ms', 0):.2f}ms |",
-                    f"| Median (P50) | {stats.get('p50_latency_ms', 0):.2f}ms |",
-                    f"| P95 Latency | {stats.get('p95_latency_ms', 0):.2f}ms |",
-                    f"| P99 Latency | {stats.get('p99_latency_ms', 0):.2f}ms |",
-                    ""
-                ])
+                lines.extend(
+                    [
+                        f"#### `{method}`",
+                        "",
+                        "| Metric | Value |",
+                        "|--------|-------|",
+                        f"| Total Requests | {stats.get('total_requests', 0)} |",
+                        f"| Successful | {stats.get('successful_requests', 0)} |",
+                        f"| Failed | {stats.get('failed_requests', 0)} |",
+                        f"| Success Rate | {stats.get('success_rate', 0):.2f}% |",
+                        f"| Min Latency | {stats.get('min_latency_ms', 0):.2f}ms |",
+                        f"| Max Latency | {stats.get('max_latency_ms', 0):.2f}ms |",
+                        f"| Avg Latency | {stats.get('avg_latency_ms', 0):.2f}ms |",
+                        f"| Median (P50) | {stats.get('p50_latency_ms', 0):.2f}ms |",
+                        f"| P95 Latency | {stats.get('p95_latency_ms', 0):.2f}ms |",
+                        f"| P99 Latency | {stats.get('p99_latency_ms', 0):.2f}ms |",
+                        "",
+                    ]
+                )
 
             if include_charts:
-                lines.extend([
-                    "### Performance Charts",
-                    "",
-                    "*(Chart placeholder - integrate with charting library)*",
-                    ""
-                ])
+                lines.extend(
+                    [
+                        "### Performance Charts",
+                        "",
+                        "*(Chart placeholder - integrate with charting library)*",
+                        "",
+                    ]
+                )
 
-        lines.extend([
-            "---",
-            "",
-            "*Report generated by MegaETH RPC Tester*"
-        ])
+        lines.extend(["---", "", "*Report generated by MegaETH RPC Tester*"])
 
         return "\n".join(lines)
 
@@ -137,33 +132,33 @@ class XMLExporter:
         """
         xml_content = XMLExporter._generate_xml(results)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(xml_content)
 
     @staticmethod
     def _generate_xml(results: Dict[str, Any]) -> str:
         """Generate XML content."""
-        root = ET.Element('rpc_test_results')
-        root.set('generated_at', datetime.now().isoformat())
+        root = ET.Element("rpc_test_results")
+        root.set("generated_at", datetime.now().isoformat())
 
         # Summary
-        summary = ET.SubElement(root, 'summary')
-        ET.SubElement(summary, 'total_endpoints').text = str(len(results))
+        summary = ET.SubElement(root, "summary")
+        ET.SubElement(summary, "total_endpoints").text = str(len(results))
         total_tests = sum(len(methods) for methods in results.values())
-        ET.SubElement(summary, 'total_tests').text = str(total_tests)
+        ET.SubElement(summary, "total_tests").text = str(total_tests)
 
         # Endpoints
-        endpoints_elem = ET.SubElement(root, 'endpoints')
+        endpoints_elem = ET.SubElement(root, "endpoints")
 
         for endpoint, methods in results.items():
-            endpoint_elem = ET.SubElement(endpoints_elem, 'endpoint')
-            endpoint_elem.set('url', endpoint)
+            endpoint_elem = ET.SubElement(endpoints_elem, "endpoint")
+            endpoint_elem.set("url", endpoint)
 
-            methods_elem = ET.SubElement(endpoint_elem, 'methods')
+            methods_elem = ET.SubElement(endpoint_elem, "methods")
 
             for method, stats in methods.items():
-                method_elem = ET.SubElement(methods_elem, 'method')
-                method_elem.set('name', method)
+                method_elem = ET.SubElement(methods_elem, "method")
+                method_elem.set("name", method)
 
                 # Add all statistics
                 for key, value in stats.items():
@@ -171,9 +166,9 @@ class XMLExporter:
                     elem.text = str(value)
 
         # Pretty print XML
-        xml_str = ET.tostring(root, encoding='unicode')
+        xml_str = ET.tostring(root, encoding="unicode")
         dom = minidom.parseString(xml_str)
-        return dom.toprettyxml(indent='  ')
+        return dom.toprettyxml(indent="  ")
 
 
 class JSONLExporter:
@@ -190,18 +185,18 @@ class JSONLExporter:
         """
         import json
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             timestamp = datetime.now().isoformat()
 
             for endpoint, methods in results.items():
                 for method, stats in methods.items():
                     record = {
-                        'timestamp': timestamp,
-                        'endpoint': endpoint,
-                        'method': method,
-                        **stats
+                        "timestamp": timestamp,
+                        "endpoint": endpoint,
+                        "method": method,
+                        **stats,
                     }
-                    f.write(json.dumps(record) + '\n')
+                    f.write(json.dumps(record) + "\n")
 
 
 class PrometheusExporter:
@@ -218,7 +213,7 @@ class PrometheusExporter:
         """
         metrics = PrometheusExporter._generate_prometheus_metrics(results)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(metrics)
 
     @staticmethod
@@ -233,7 +228,7 @@ class PrometheusExporter:
             "",
             "# HELP rpc_test_requests_total Total number of requests",
             "# TYPE rpc_test_requests_total counter",
-            ""
+            "",
         ]
 
         timestamp = int(datetime.now().timestamp() * 1000)
@@ -243,42 +238,40 @@ class PrometheusExporter:
                 labels = f'endpoint="{endpoint}",method="{method}"'
 
                 # Latency metrics
-                avg_latency = stats.get('avg_latency_ms', 0)
+                avg_latency = stats.get("avg_latency_ms", 0)
                 lines.append(
                     f'rpc_test_latency_milliseconds{{{labels},quantile="avg"}} '
-                    f'{avg_latency} {timestamp}'
+                    f"{avg_latency} {timestamp}"
                 )
 
-                p95 = stats.get('p95_latency_ms', 0)
+                p95 = stats.get("p95_latency_ms", 0)
                 lines.append(
                     f'rpc_test_latency_milliseconds{{{labels},quantile="0.95"}} '
-                    f'{p95} {timestamp}'
+                    f"{p95} {timestamp}"
                 )
 
-                p99 = stats.get('p99_latency_ms', 0)
+                p99 = stats.get("p99_latency_ms", 0)
                 lines.append(
                     f'rpc_test_latency_milliseconds{{{labels},quantile="0.99"}} '
-                    f'{p99} {timestamp}'
+                    f"{p99} {timestamp}"
                 )
 
                 # Success rate
-                success_rate = stats.get('success_rate', 0)
-                lines.append(
-                    f'rpc_test_success_rate{{{labels}}} {success_rate} {timestamp}'
-                )
+                success_rate = stats.get("success_rate", 0)
+                lines.append(f"rpc_test_success_rate{{{labels}}} {success_rate} {timestamp}")
 
                 # Request counts
-                total = stats.get('total_requests', 0)
+                total = stats.get("total_requests", 0)
                 lines.append(
                     f'rpc_test_requests_total{{{labels},status="total"}} {total} {timestamp}'
                 )
 
-                successful = stats.get('successful_requests', 0)
+                successful = stats.get("successful_requests", 0)
                 lines.append(
                     f'rpc_test_requests_total{{{labels},status="success"}} {successful} {timestamp}'
                 )
 
-                failed = stats.get('failed_requests', 0)
+                failed = stats.get("failed_requests", 0)
                 lines.append(
                     f'rpc_test_requests_total{{{labels},status="failed"}} {failed} {timestamp}'
                 )
@@ -294,18 +287,17 @@ class ExporterRegistry:
     def __init__(self):
         """Initialize exporter registry."""
         self.exporters = {
-            'markdown': MarkdownExporter,
-            'xml': XMLExporter,
-            'jsonl': JSONLExporter,
-            'prometheus': PrometheusExporter
+            "markdown": MarkdownExporter,
+            "xml": XMLExporter,
+            "jsonl": JSONLExporter,
+            "prometheus": PrometheusExporter,
         }
 
     def register_exporter(self, name: str, exporter_class):
         """Register custom exporter."""
         self.exporters[name] = exporter_class
 
-    def export(self, results: Dict[str, Any], output_dir: str,
-              formats: List[str]):
+    def export(self, results: Dict[str, Any], output_dir: str, formats: List[str]):
         """
         Export results in multiple formats.
 
@@ -326,13 +318,13 @@ class ExporterRegistry:
 
             exporter = self.exporters[fmt]
             file_ext = {
-                'markdown': '.md',
-                'xml': '.xml',
-                'jsonl': '.jsonl',
-                'prometheus': '.prom'
-            }.get(fmt, f'.{fmt}')
+                "markdown": ".md",
+                "xml": ".xml",
+                "jsonl": ".jsonl",
+                "prometheus": ".prom",
+            }.get(fmt, f".{fmt}")
 
-            file_path = output_path / f'results{file_ext}'
+            file_path = output_path / f"results{file_ext}"
             exporter.export(results, str(file_path))
             print(f"Exported {fmt} report to: {file_path}")
 

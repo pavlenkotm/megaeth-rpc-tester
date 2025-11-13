@@ -5,23 +5,25 @@ Prevents cascading failures by stopping requests to failing endpoints.
 """
 
 import asyncio
-from typing import Dict, Optional, Any, Callable
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-import time
+from typing import Any, Callable, Dict, List, Optional
 
 
 class CircuitState(Enum):
     """Circuit breaker states."""
+
     CLOSED = "closed"  # Normal operation
-    OPEN = "open"      # Blocking requests
+    OPEN = "open"  # Blocking requests
     HALF_OPEN = "half_open"  # Testing if service recovered
 
 
 @dataclass
 class CircuitBreakerConfig:
     """Configuration for circuit breaker."""
+
     failure_threshold: int = 5  # Number of failures before opening
     success_threshold: int = 2  # Number of successes to close from half-open
     timeout: float = 60.0  # Timeout in seconds before attempting recovery
@@ -30,6 +32,7 @@ class CircuitBreakerConfig:
 
 class CircuitBreakerError(Exception):
     """Exception raised when circuit is open."""
+
     pass
 
 
@@ -72,9 +75,7 @@ class CircuitBreaker:
             await self._check_state()
 
             if self.state == CircuitState.OPEN:
-                raise CircuitBreakerError(
-                    f"Circuit breaker '{self.name}' is OPEN"
-                )
+                raise CircuitBreakerError(f"Circuit breaker '{self.name}' is OPEN")
 
             if self.state == CircuitState.HALF_OPEN:
                 if self.half_open_calls >= self.config.half_open_max_calls:
@@ -151,17 +152,17 @@ class CircuitBreaker:
     def get_state(self) -> Dict[str, Any]:
         """Get current circuit breaker state."""
         return {
-            'name': self.name,
-            'state': self.state.value,
-            'failure_count': self.failure_count,
-            'success_count': self.success_count,
-            'last_failure_time': self.last_failure_time,
-            'config': {
-                'failure_threshold': self.config.failure_threshold,
-                'success_threshold': self.config.success_threshold,
-                'timeout': self.config.timeout,
-                'half_open_max_calls': self.config.half_open_max_calls
-            }
+            "name": self.name,
+            "state": self.state.value,
+            "failure_count": self.failure_count,
+            "success_count": self.success_count,
+            "last_failure_time": self.last_failure_time,
+            "config": {
+                "failure_threshold": self.config.failure_threshold,
+                "success_threshold": self.config.success_threshold,
+                "timeout": self.config.timeout,
+                "half_open_max_calls": self.config.half_open_max_calls,
+            },
         }
 
 
@@ -172,8 +173,9 @@ class CircuitBreakerRegistry:
         """Initialize registry."""
         self.breakers: Dict[str, CircuitBreaker] = {}
 
-    def get_breaker(self, name: str,
-                   config: Optional[CircuitBreakerConfig] = None) -> CircuitBreaker:
+    def get_breaker(
+        self, name: str, config: Optional[CircuitBreakerConfig] = None
+    ) -> CircuitBreaker:
         """
         Get or create circuit breaker.
 
@@ -196,24 +198,21 @@ class CircuitBreakerRegistry:
 
     def get_all_states(self) -> Dict[str, Dict[str, Any]]:
         """Get states of all circuit breakers."""
-        return {
-            name: breaker.get_state()
-            for name, breaker in self.breakers.items()
-        }
+        return {name: breaker.get_state() for name, breaker in self.breakers.items()}
 
     def get_open_circuits(self) -> List[str]:
         """Get list of open circuit breakers."""
         return [
-            name for name, breaker in self.breakers.items()
-            if breaker.state == CircuitState.OPEN
+            name for name, breaker in self.breakers.items() if breaker.state == CircuitState.OPEN
         ]
 
 
 class AdaptiveCircuitBreaker(CircuitBreaker):
     """Circuit breaker with adaptive thresholds based on error rate."""
 
-    def __init__(self, name: str, config: Optional[CircuitBreakerConfig] = None,
-                 window_size: int = 100):
+    def __init__(
+        self, name: str, config: Optional[CircuitBreakerConfig] = None, window_size: int = 100
+    ):
         """
         Initialize adaptive circuit breaker.
 
@@ -270,10 +269,10 @@ class AdaptiveCircuitBreaker(CircuitBreaker):
         else:
             error_rate = 0
 
-        base_state['adaptive_metrics'] = {
-            'window_size': self.window_size,
-            'recent_calls_count': len(self.recent_calls),
-            'error_rate': error_rate
+        base_state["adaptive_metrics"] = {
+            "window_size": self.window_size,
+            "recent_calls_count": len(self.recent_calls),
+            "error_rate": error_rate,
         }
 
         return base_state
@@ -327,13 +326,12 @@ class BulkheadPattern:
     def get_stats(self) -> Dict[str, Any]:
         """Get bulkhead statistics."""
         return {
-            'name': self.name,
-            'max_concurrent': self.max_concurrent,
-            'active_calls': self.active_calls,
-            'total_calls': self.total_calls,
-            'rejected_calls': self.rejected_calls,
-            'rejection_rate': (
-                self.rejected_calls / self.total_calls
-                if self.total_calls > 0 else 0
-            )
+            "name": self.name,
+            "max_concurrent": self.max_concurrent,
+            "active_calls": self.active_calls,
+            "total_calls": self.total_calls,
+            "rejected_calls": self.rejected_calls,
+            "rejection_rate": (
+                self.rejected_calls / self.total_calls if self.total_calls > 0 else 0
+            ),
         }

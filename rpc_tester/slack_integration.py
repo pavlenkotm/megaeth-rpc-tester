@@ -4,16 +4,22 @@ Slack integration for RPC test notifications.
 Send formatted messages to Slack channels with test results and alerts.
 """
 
-import aiohttp
-from typing import Dict, List, Optional, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 
 
 class SlackNotifier:
     """Send notifications to Slack using webhooks."""
 
-    def __init__(self, webhook_url: str, channel: Optional[str] = None,
-                 username: str = "RPC Tester", icon_emoji: str = ":rocket:"):
+    def __init__(
+        self,
+        webhook_url: str,
+        channel: Optional[str] = None,
+        username: str = "RPC Tester",
+        icon_emoji: str = ":rocket:",
+    ):
         """
         Initialize Slack notifier.
 
@@ -36,17 +42,13 @@ class SlackNotifier:
             text: Message text
             attachments: Message attachments (for rich formatting)
         """
-        payload = {
-            'username': self.username,
-            'icon_emoji': self.icon_emoji,
-            'text': text
-        }
+        payload = {"username": self.username, "icon_emoji": self.icon_emoji, "text": text}
 
         if self.channel:
-            payload['channel'] = self.channel
+            payload["channel"] = self.channel
 
         if attachments:
-            payload['attachments'] = attachments
+            payload["attachments"] = attachments
 
         async with aiohttp.ClientSession() as session:
             try:
@@ -58,8 +60,9 @@ class SlackNotifier:
             except Exception as e:
                 print(f"Failed to send Slack notification: {e}")
 
-    async def send_test_results(self, results: Dict[str, Any],
-                               test_config: Optional[Dict[str, Any]] = None):
+    async def send_test_results(
+        self, results: Dict[str, Any], test_config: Optional[Dict[str, Any]] = None
+    ):
         """
         Send test results to Slack with rich formatting.
 
@@ -74,9 +77,11 @@ class SlackNotifier:
         all_success_rates = []
         for methods in results.values():
             for stats in methods.values():
-                all_success_rates.append(stats.get('success_rate', 0))
+                all_success_rates.append(stats.get("success_rate", 0))
 
-        avg_success_rate = sum(all_success_rates) / len(all_success_rates) if all_success_rates else 0
+        avg_success_rate = (
+            sum(all_success_rates) / len(all_success_rates) if all_success_rates else 0
+        )
 
         # Determine color based on success rate
         if avg_success_rate >= 95:
@@ -88,31 +93,25 @@ class SlackNotifier:
 
         text = f":bar_chart: *RPC Test Results Summary*"
 
-        attachments = [{
-            'color': color,
-            'fields': [
-                {
-                    'title': 'Endpoints Tested',
-                    'value': str(total_endpoints),
-                    'short': True
-                },
-                {
-                    'title': 'Total Tests',
-                    'value': str(total_tests),
-                    'short': True
-                },
-                {
-                    'title': 'Average Success Rate',
-                    'value': f"{avg_success_rate:.2f}%",
-                    'short': True
-                },
-                {
-                    'title': 'Timestamp',
-                    'value': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    'short': True
-                }
-            ]
-        }]
+        attachments = [
+            {
+                "color": color,
+                "fields": [
+                    {"title": "Endpoints Tested", "value": str(total_endpoints), "short": True},
+                    {"title": "Total Tests", "value": str(total_tests), "short": True},
+                    {
+                        "title": "Average Success Rate",
+                        "value": f"{avg_success_rate:.2f}%",
+                        "short": True,
+                    },
+                    {
+                        "title": "Timestamp",
+                        "value": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "short": True,
+                    },
+                ],
+            }
+        ]
 
         # Add details for each endpoint
         for endpoint, methods in results.items():
@@ -124,26 +123,29 @@ class SlackNotifier:
                     f"P99: {stats.get('p99_latency_ms', 0):.2f}ms"
                 )
 
-                fields.append({
-                    'title': f"{method}",
-                    'value': (
-                        f"Success: {stats.get('success_rate', 0):.1f}% | "
-                        f"{latency_info}"
-                    ),
-                    'short': False
-                })
+                fields.append(
+                    {
+                        "title": f"{method}",
+                        "value": (
+                            f"Success: {stats.get('success_rate', 0):.1f}% | " f"{latency_info}"
+                        ),
+                        "short": False,
+                    }
+                )
 
-            attachments.append({
-                'color': '#36a64f',
-                'title': f':link: {endpoint}',
-                'fields': fields
-            })
+            attachments.append(
+                {"color": "#36a64f", "title": f":link: {endpoint}", "fields": fields}
+            )
 
         await self.send_message(text, attachments)
 
-    async def send_alert(self, alert_type: str, message: str,
-                        severity: str = "warning",
-                        details: Optional[Dict[str, Any]] = None):
+    async def send_alert(
+        self,
+        alert_type: str,
+        message: str,
+        severity: str = "warning",
+        details: Optional[Dict[str, Any]] = None,
+    ):
         """
         Send an alert to Slack.
 
@@ -155,61 +157,51 @@ class SlackNotifier:
         """
         # Map severity to color
         color_map = {
-            'info': '#36a64f',      # Green
-            'warning': '#ff9900',   # Orange
-            'error': '#ff0000'      # Red
+            "info": "#36a64f",  # Green
+            "warning": "#ff9900",  # Orange
+            "error": "#ff0000",  # Red
         }
 
         # Map severity to emoji
         emoji_map = {
-            'info': ':information_source:',
-            'warning': ':warning:',
-            'error': ':rotating_light:'
+            "info": ":information_source:",
+            "warning": ":warning:",
+            "error": ":rotating_light:",
         }
 
-        color = color_map.get(severity, '#808080')
-        emoji = emoji_map.get(severity, ':bell:')
+        color = color_map.get(severity, "#808080")
+        emoji = emoji_map.get(severity, ":bell:")
 
         text = f"{emoji} *RPC Tester Alert: {alert_type}*"
 
         fields = [
+            {"title": "Message", "value": message, "short": False},
+            {"title": "Severity", "value": severity.upper(), "short": True},
             {
-                'title': 'Message',
-                'value': message,
-                'short': False
+                "title": "Timestamp",
+                "value": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "short": True,
             },
-            {
-                'title': 'Severity',
-                'value': severity.upper(),
-                'short': True
-            },
-            {
-                'title': 'Timestamp',
-                'value': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'short': True
-            }
         ]
 
         if details:
             for key, value in details.items():
-                fields.append({
-                    'title': key.replace('_', ' ').title(),
-                    'value': str(value),
-                    'short': True
-                })
+                fields.append(
+                    {"title": key.replace("_", " ").title(), "value": str(value), "short": True}
+                )
 
-        attachments = [{
-            'color': color,
-            'fields': fields
-        }]
+        attachments = [{"color": color, "fields": fields}]
 
         await self.send_message(text, attachments)
 
-    async def send_performance_degradation_alert(self, endpoint: str,
-                                                 method: str,
-                                                 current_latency: float,
-                                                 baseline_latency: float,
-                                                 threshold_percent: float):
+    async def send_performance_degradation_alert(
+        self,
+        endpoint: str,
+        method: str,
+        current_latency: float,
+        baseline_latency: float,
+        threshold_percent: float,
+    ):
         """
         Send performance degradation alert.
 
@@ -227,17 +219,18 @@ class SlackNotifier:
             message=f"Performance degradation detected for {method} on {endpoint}",
             severity="warning",
             details={
-                'Endpoint': endpoint,
-                'Method': method,
-                'Current Latency': f"{current_latency:.2f}ms",
-                'Baseline Latency': f"{baseline_latency:.2f}ms",
-                'Degradation': f"{degradation:.2f}%",
-                'Threshold': f"{threshold_percent:.2f}%"
-            }
+                "Endpoint": endpoint,
+                "Method": method,
+                "Current Latency": f"{current_latency:.2f}ms",
+                "Baseline Latency": f"{baseline_latency:.2f}ms",
+                "Degradation": f"{degradation:.2f}%",
+                "Threshold": f"{threshold_percent:.2f}%",
+            },
         )
 
-    async def send_success_rate_alert(self, endpoint: str, method: str,
-                                      success_rate: float, threshold: float):
+    async def send_success_rate_alert(
+        self, endpoint: str, method: str, success_rate: float, threshold: float
+    ):
         """
         Send low success rate alert.
 
@@ -252,11 +245,11 @@ class SlackNotifier:
             message=f"Success rate below threshold for {method} on {endpoint}",
             severity="error",
             details={
-                'Endpoint': endpoint,
-                'Method': method,
-                'Success Rate': f"{success_rate:.2f}%",
-                'Threshold': f"{threshold:.2f}%"
-            }
+                "Endpoint": endpoint,
+                "Method": method,
+                "Success Rate": f"{success_rate:.2f}%",
+                "Threshold": f"{threshold:.2f}%",
+            },
         )
 
 
@@ -280,9 +273,9 @@ class SlackFormatter:
         lines = ["*Endpoint Comparison Results*\n"]
 
         for comp in comparisons:
-            endpoint = comp.get('endpoint', 'Unknown')
-            rank = comp.get('rank', 0)
-            score = comp.get('score', 0)
+            endpoint = comp.get("endpoint", "Unknown")
+            rank = comp.get("rank", 0)
+            score = comp.get("score", 0)
 
             lines.append(f"{rank}. *{endpoint}*")
             lines.append(f"   Score: {score:.2f}")
@@ -305,32 +298,28 @@ class SlackFormatter:
         """
         fields = []
 
-        if 'total_requests' in summary:
-            fields.append({
-                'title': 'Total Requests',
-                'value': str(summary['total_requests']),
-                'short': True
-            })
+        if "total_requests" in summary:
+            fields.append(
+                {"title": "Total Requests", "value": str(summary["total_requests"]), "short": True}
+            )
 
-        if 'successful_requests' in summary:
-            fields.append({
-                'title': 'Successful',
-                'value': str(summary['successful_requests']),
-                'short': True
-            })
+        if "successful_requests" in summary:
+            fields.append(
+                {"title": "Successful", "value": str(summary["successful_requests"]), "short": True}
+            )
 
-        if 'failed_requests' in summary:
-            fields.append({
-                'title': 'Failed',
-                'value': str(summary['failed_requests']),
-                'short': True
-            })
+        if "failed_requests" in summary:
+            fields.append(
+                {"title": "Failed", "value": str(summary["failed_requests"]), "short": True}
+            )
 
-        if 'avg_latency_ms' in summary:
-            fields.append({
-                'title': 'Average Latency',
-                'value': f"{summary['avg_latency_ms']:.2f}ms",
-                'short': True
-            })
+        if "avg_latency_ms" in summary:
+            fields.append(
+                {
+                    "title": "Average Latency",
+                    "value": f"{summary['avg_latency_ms']:.2f}ms",
+                    "short": True,
+                }
+            )
 
         return fields

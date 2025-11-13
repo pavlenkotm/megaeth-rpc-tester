@@ -4,14 +4,15 @@ Performance regression detection for RPC tests.
 Detect performance degradations by comparing current results with baseline.
 """
 
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class RegressionSeverity(Enum):
     """Severity levels for performance regressions."""
+
     NONE = "none"
     LOW = "low"
     MEDIUM = "medium"
@@ -22,6 +23,7 @@ class RegressionSeverity(Enum):
 @dataclass
 class RegressionResult:
     """Result of regression detection."""
+
     endpoint: str
     method: str
     metric: str
@@ -45,29 +47,29 @@ class RegressionDetector:
                        Format: {'metric': {'low': 10, 'medium': 25, 'high': 50, 'critical': 100}}
         """
         self.thresholds = thresholds or {
-            'latency': {
-                'low': 10.0,      # 10% increase
-                'medium': 25.0,   # 25% increase
-                'high': 50.0,     # 50% increase
-                'critical': 100.0  # 100% increase (2x)
+            "latency": {
+                "low": 10.0,  # 10% increase
+                "medium": 25.0,  # 25% increase
+                "high": 50.0,  # 50% increase
+                "critical": 100.0,  # 100% increase (2x)
             },
-            'success_rate': {
-                'low': 1.0,       # 1% decrease
-                'medium': 5.0,    # 5% decrease
-                'high': 10.0,     # 10% decrease
-                'critical': 20.0   # 20% decrease
+            "success_rate": {
+                "low": 1.0,  # 1% decrease
+                "medium": 5.0,  # 5% decrease
+                "high": 10.0,  # 10% decrease
+                "critical": 20.0,  # 20% decrease
             },
-            'error_rate': {
-                'low': 1.0,       # 1% increase
-                'medium': 5.0,    # 5% increase
-                'high': 10.0,     # 10% increase
-                'critical': 20.0   # 20% increase
-            }
+            "error_rate": {
+                "low": 1.0,  # 1% increase
+                "medium": 5.0,  # 5% increase
+                "high": 10.0,  # 10% increase
+                "critical": 20.0,  # 20% increase
+            },
         }
 
-    def detect_latency_regression(self, baseline: Dict[str, float],
-                                  current: Dict[str, float],
-                                  endpoint: str, method: str) -> Optional[RegressionResult]:
+    def detect_latency_regression(
+        self, baseline: Dict[str, float], current: Dict[str, float], endpoint: str, method: str
+    ) -> Optional[RegressionResult]:
         """
         Detect latency regression.
 
@@ -80,8 +82,8 @@ class RegressionDetector:
         Returns:
             RegressionResult if regression detected, None otherwise
         """
-        baseline_latency = baseline.get('avg_latency_ms', 0)
-        current_latency = current.get('avg_latency_ms', 0)
+        baseline_latency = baseline.get("avg_latency_ms", 0)
+        current_latency = current.get("avg_latency_ms", 0)
 
         if baseline_latency == 0:
             return None
@@ -91,7 +93,7 @@ class RegressionDetector:
         if change_percent <= 0:
             return None  # No regression, performance improved or stayed same
 
-        severity = self._determine_severity('latency', change_percent)
+        severity = self._determine_severity("latency", change_percent)
 
         if severity == RegressionSeverity.NONE:
             return None
@@ -99,23 +101,23 @@ class RegressionDetector:
         return RegressionResult(
             endpoint=endpoint,
             method=method,
-            metric='latency',
+            metric="latency",
             baseline_value=baseline_latency,
             current_value=current_latency,
             change_percent=change_percent,
             severity=severity,
             timestamp=datetime.now().isoformat(),
             details={
-                'baseline_p95': baseline.get('p95_latency_ms', 0),
-                'current_p95': current.get('p95_latency_ms', 0),
-                'baseline_p99': baseline.get('p99_latency_ms', 0),
-                'current_p99': current.get('p99_latency_ms', 0)
-            }
+                "baseline_p95": baseline.get("p95_latency_ms", 0),
+                "current_p95": current.get("p95_latency_ms", 0),
+                "baseline_p99": baseline.get("p99_latency_ms", 0),
+                "current_p99": current.get("p99_latency_ms", 0),
+            },
         )
 
-    def detect_success_rate_regression(self, baseline: Dict[str, float],
-                                       current: Dict[str, float],
-                                       endpoint: str, method: str) -> Optional[RegressionResult]:
+    def detect_success_rate_regression(
+        self, baseline: Dict[str, float], current: Dict[str, float], endpoint: str, method: str
+    ) -> Optional[RegressionResult]:
         """
         Detect success rate regression.
 
@@ -128,15 +130,15 @@ class RegressionDetector:
         Returns:
             RegressionResult if regression detected, None otherwise
         """
-        baseline_rate = baseline.get('success_rate', 100)
-        current_rate = current.get('success_rate', 100)
+        baseline_rate = baseline.get("success_rate", 100)
+        current_rate = current.get("success_rate", 100)
 
         change_percent = baseline_rate - current_rate  # Decrease is bad
 
         if change_percent <= 0:
             return None  # No regression
 
-        severity = self._determine_severity('success_rate', change_percent)
+        severity = self._determine_severity("success_rate", change_percent)
 
         if severity == RegressionSeverity.NONE:
             return None
@@ -144,22 +146,25 @@ class RegressionDetector:
         return RegressionResult(
             endpoint=endpoint,
             method=method,
-            metric='success_rate',
+            metric="success_rate",
             baseline_value=baseline_rate,
             current_value=current_rate,
             change_percent=-change_percent,  # Negative to show decrease
             severity=severity,
             timestamp=datetime.now().isoformat(),
             details={
-                'baseline_failed': baseline.get('failed_requests', 0),
-                'current_failed': current.get('failed_requests', 0),
-                'baseline_total': baseline.get('total_requests', 0),
-                'current_total': current.get('total_requests', 0)
-            }
+                "baseline_failed": baseline.get("failed_requests", 0),
+                "current_failed": current.get("failed_requests", 0),
+                "baseline_total": baseline.get("total_requests", 0),
+                "current_total": current.get("total_requests", 0),
+            },
         )
 
-    def detect_all_regressions(self, baseline_results: Dict[str, Dict[str, Any]],
-                              current_results: Dict[str, Dict[str, Any]]) -> List[RegressionResult]:
+    def detect_all_regressions(
+        self,
+        baseline_results: Dict[str, Dict[str, Any]],
+        current_results: Dict[str, Dict[str, Any]],
+    ) -> List[RegressionResult]:
         """
         Detect all regressions between baseline and current results.
 
@@ -206,13 +211,13 @@ class RegressionDetector:
         """Determine severity based on change percentage."""
         thresholds = self.thresholds.get(metric, {})
 
-        if change_percent >= thresholds.get('critical', 100):
+        if change_percent >= thresholds.get("critical", 100):
             return RegressionSeverity.CRITICAL
-        elif change_percent >= thresholds.get('high', 50):
+        elif change_percent >= thresholds.get("high", 50):
             return RegressionSeverity.HIGH
-        elif change_percent >= thresholds.get('medium', 25):
+        elif change_percent >= thresholds.get("medium", 25):
             return RegressionSeverity.MEDIUM
-        elif change_percent >= thresholds.get('low', 10):
+        elif change_percent >= thresholds.get("low", 10):
             return RegressionSeverity.LOW
         else:
             return RegressionSeverity.NONE
@@ -235,7 +240,7 @@ class RegressionDetector:
             "PERFORMANCE REGRESSION REPORT",
             "=" * 80,
             f"\nTotal Regressions Found: {len(regressions)}",
-            ""
+            "",
         ]
 
         # Group by severity
@@ -247,7 +252,7 @@ class RegressionDetector:
             by_severity[severity].append(reg)
 
         # Report by severity (critical first)
-        severity_order = ['critical', 'high', 'medium', 'low']
+        severity_order = ["critical", "high", "medium", "low"]
         for severity in severity_order:
             if severity not in by_severity:
                 continue
@@ -281,8 +286,9 @@ class BaselineManager:
         """Initialize baseline manager."""
         self.baselines: Dict[str, Dict[str, Any]] = {}
 
-    def set_baseline(self, identifier: str, results: Dict[str, Any],
-                    metadata: Optional[Dict[str, Any]] = None):
+    def set_baseline(
+        self, identifier: str, results: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None
+    ):
         """
         Set baseline for comparison.
 
@@ -292,9 +298,9 @@ class BaselineManager:
             metadata: Additional metadata
         """
         self.baselines[identifier] = {
-            'results': results,
-            'timestamp': datetime.now().isoformat(),
-            'metadata': metadata or {}
+            "results": results,
+            "timestamp": datetime.now().isoformat(),
+            "metadata": metadata or {},
         }
 
     def get_baseline(self, identifier: str) -> Optional[Dict[str, Any]]:
@@ -309,7 +315,7 @@ class BaselineManager:
         """
         baseline = self.baselines.get(identifier)
         if baseline:
-            return baseline['results']
+            return baseline["results"]
         return None
 
     def list_baselines(self) -> List[str]:
@@ -331,12 +337,9 @@ class BaselineManager:
         if not self.baselines:
             return None
 
-        latest = max(
-            self.baselines.items(),
-            key=lambda x: x[1]['timestamp']
-        )
+        latest = max(self.baselines.items(), key=lambda x: x[1]["timestamp"])
 
-        return latest[0], latest[1]['results']
+        return latest[0], latest[1]["results"]
 
 
 class ChangePointDetector:
@@ -363,8 +366,8 @@ class ChangePointDetector:
         window_size = min(10, len(values) // 3)
 
         for i in range(window_size, len(values) - window_size):
-            before = values[i - window_size:i]
-            after = values[i:i + window_size]
+            before = values[i - window_size : i]
+            after = values[i : i + window_size]
 
             mean_before = sum(before) / len(before)
             mean_after = sum(after) / len(after)

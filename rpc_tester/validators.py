@@ -3,12 +3,13 @@ Configuration and data validators for RPC Tester.
 """
 
 import re
-from typing import List, Any, Optional
+from typing import Any, List, Optional
 from urllib.parse import urlparse
 
 
 class ValidationError(Exception):
     """Raised when validation fails."""
+
     pass
 
 
@@ -38,7 +39,7 @@ class ConfigValidator:
             if not parsed.scheme:
                 raise ValidationError(f"URL missing scheme: {url}")
 
-            if parsed.scheme not in ['http', 'https', 'ws', 'wss']:
+            if parsed.scheme not in ["http", "https", "ws", "wss"]:
                 raise ValidationError(f"Invalid URL scheme: {parsed.scheme}")
 
             if not parsed.netloc:
@@ -195,7 +196,7 @@ class ConfigValidator:
             raise ValidationError("RPC method must be a string")
 
         # Valid method format: namespace_methodName
-        pattern = r'^[a-z]+[a-zA-Z0-9]*_[a-zA-Z][a-zA-Z0-9]*$'
+        pattern = r"^[a-z]+[a-zA-Z0-9]*_[a-zA-Z][a-zA-Z0-9]*$"
         if not re.match(pattern, method):
             raise ValidationError(
                 f"Invalid RPC method format: {method}. "
@@ -250,7 +251,7 @@ class ConfigValidator:
             raise ValidationError("Ethereum address must be a string")
 
         # Check format: 0x followed by 40 hexadecimal characters
-        pattern = r'^0x[a-fA-F0-9]{40}$'
+        pattern = r"^0x[a-fA-F0-9]{40}$"
         if not re.match(pattern, address):
             raise ValidationError(
                 f"Invalid Ethereum address format: {address}. "
@@ -280,12 +281,10 @@ class ConfigValidator:
             raise ValidationError("Output directory must be a string")
 
         # Check for invalid characters
-        invalid_chars = ['<', '>', ':', '"', '|', '?', '*']
+        invalid_chars = ["<", ">", ":", '"', "|", "?", "*"]
         for char in invalid_chars:
             if char in path:
-                raise ValidationError(
-                    f"Output directory contains invalid character: {char}"
-                )
+                raise ValidationError(f"Output directory contains invalid character: {char}")
 
         return True
 

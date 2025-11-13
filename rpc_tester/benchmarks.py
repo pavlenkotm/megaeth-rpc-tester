@@ -4,13 +4,14 @@ Benchmark scoring and ranking system for RPC endpoints.
 Compare and rank endpoints based on multiple performance criteria.
 """
 
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class ScoringCriteria(Enum):
     """Criteria for scoring endpoints."""
+
     LATENCY = "latency"
     SUCCESS_RATE = "success_rate"
     CONSISTENCY = "consistency"  # Low variance
@@ -21,6 +22,7 @@ class ScoringCriteria(Enum):
 @dataclass
 class BenchmarkScore:
     """Benchmark score for an endpoint."""
+
     endpoint: str
     overall_score: float
     criteria_scores: Dict[str, float]
@@ -44,7 +46,7 @@ class BenchmarkScorer:
             ScoringCriteria.SUCCESS_RATE: 0.30,
             ScoringCriteria.CONSISTENCY: 0.20,
             ScoringCriteria.AVAILABILITY: 0.10,
-            ScoringCriteria.THROUGHPUT: 0.05
+            ScoringCriteria.THROUGHPUT: 0.05,
         }
 
         # Validate weights sum to 1.0
@@ -52,8 +54,12 @@ class BenchmarkScorer:
         if abs(total - 1.0) > 0.001:
             raise ValueError(f"Weights must sum to 1.0, got {total}")
 
-    def calculate_score(self, endpoint: str, results: Dict[str, Any],
-                       reference_values: Optional[Dict[str, float]] = None) -> BenchmarkScore:
+    def calculate_score(
+        self,
+        endpoint: str,
+        results: Dict[str, Any],
+        reference_values: Optional[Dict[str, float]] = None,
+    ) -> BenchmarkScore:
         """
         Calculate benchmark score for endpoint.
 
@@ -68,23 +74,21 @@ class BenchmarkScorer:
         criteria_scores = {}
 
         # Calculate individual criteria scores
-        criteria_scores['latency'] = self._score_latency(
-            results,
-            reference_values.get('latency', 1000.0) if reference_values else 1000.0
+        criteria_scores["latency"] = self._score_latency(
+            results, reference_values.get("latency", 1000.0) if reference_values else 1000.0
         )
 
-        criteria_scores['success_rate'] = self._score_success_rate(results)
+        criteria_scores["success_rate"] = self._score_success_rate(results)
 
-        criteria_scores['consistency'] = self._score_consistency(results)
+        criteria_scores["consistency"] = self._score_consistency(results)
 
-        criteria_scores['availability'] = self._score_availability(results)
+        criteria_scores["availability"] = self._score_availability(results)
 
-        criteria_scores['throughput'] = self._score_throughput(results)
+        criteria_scores["throughput"] = self._score_throughput(results)
 
         # Calculate weighted overall score
         overall_score = sum(
-            criteria_scores[criterion.value] * weight
-            for criterion, weight in self.weights.items()
+            criteria_scores[criterion.value] * weight for criterion, weight in self.weights.items()
         )
 
         # Normalize to 0-100 scale
@@ -99,7 +103,7 @@ class BenchmarkScorer:
             criteria_scores=criteria_scores,
             rank=0,  # Will be set during ranking
             grade=grade,
-            details=results
+            details=results,
         )
 
     def _score_latency(self, results: Dict[str, Any], target_latency: float) -> float:
@@ -113,7 +117,7 @@ class BenchmarkScorer:
         Returns:
             Score from 0-100
         """
-        avg_latency = results.get('avg_latency_ms', float('inf'))
+        avg_latency = results.get("avg_latency_ms", float("inf"))
 
         if avg_latency == 0:
             return 100
@@ -134,7 +138,7 @@ class BenchmarkScorer:
         Returns:
             Score from 0-100
         """
-        success_rate = results.get('success_rate', 0)
+        success_rate = results.get("success_rate", 0)
         return success_rate  # Already 0-100
 
     def _score_consistency(self, results: Dict[str, Any]) -> float:
@@ -148,8 +152,8 @@ class BenchmarkScorer:
             Score from 0-100
         """
         # Use coefficient of variation as consistency metric
-        avg_latency = results.get('avg_latency_ms', 0)
-        std_dev = results.get('std_dev_latency_ms', 0)
+        avg_latency = results.get("avg_latency_ms", 0)
+        std_dev = results.get("std_dev_latency_ms", 0)
 
         if avg_latency == 0:
             return 0
@@ -181,8 +185,8 @@ class BenchmarkScorer:
         Returns:
             Score from 0-100
         """
-        total = results.get('total_requests', 0)
-        successful = results.get('successful_requests', 0)
+        total = results.get("total_requests", 0)
+        successful = results.get("successful_requests", 0)
 
         if total == 0:
             return 0
@@ -201,8 +205,8 @@ class BenchmarkScorer:
             Score from 0-100
         """
         # Throughput = requests per second
-        total_requests = results.get('total_requests', 0)
-        total_time = results.get('total_time_seconds', 1)
+        total_requests = results.get("total_requests", 0)
+        total_time = results.get("total_time_seconds", 1)
 
         if total_time == 0:
             return 0
@@ -252,8 +256,9 @@ class BenchmarkComparator:
     """Compare multiple endpoints and generate comparison reports."""
 
     @staticmethod
-    def compare_endpoints(results: Dict[str, Dict[str, Any]],
-                         scorer: Optional[BenchmarkScorer] = None) -> List[BenchmarkScore]:
+    def compare_endpoints(
+        results: Dict[str, Dict[str, Any]], scorer: Optional[BenchmarkScorer] = None
+    ) -> List[BenchmarkScore]:
         """
         Compare multiple endpoints.
 
@@ -290,9 +295,9 @@ class BenchmarkComparator:
         total_time = 0
 
         for method_stats in method_results.values():
-            total_requests += method_stats.get('total_requests', 0)
-            successful_requests += method_stats.get('successful_requests', 0)
-            all_latencies.append(method_stats.get('avg_latency_ms', 0))
+            total_requests += method_stats.get("total_requests", 0)
+            successful_requests += method_stats.get("successful_requests", 0)
+            all_latencies.append(method_stats.get("avg_latency_ms", 0))
 
         avg_latency = sum(all_latencies) / len(all_latencies) if all_latencies else 0
         success_rate = (successful_requests / total_requests * 100) if total_requests > 0 else 0
@@ -301,17 +306,17 @@ class BenchmarkComparator:
         if len(all_latencies) > 1:
             mean = avg_latency
             variance = sum((x - mean) ** 2 for x in all_latencies) / len(all_latencies)
-            std_dev = variance ** 0.5
+            std_dev = variance**0.5
         else:
             std_dev = 0
 
         return {
-            'avg_latency_ms': avg_latency,
-            'success_rate': success_rate,
-            'total_requests': total_requests,
-            'successful_requests': successful_requests,
-            'std_dev_latency_ms': std_dev,
-            'total_time_seconds': total_time or 1
+            "avg_latency_ms": avg_latency,
+            "success_rate": success_rate,
+            "total_requests": total_requests,
+            "successful_requests": successful_requests,
+            "std_dev_latency_ms": std_dev,
+            "total_time_seconds": total_time or 1,
         }
 
     @staticmethod
@@ -320,12 +325,7 @@ class BenchmarkComparator:
         if not scores:
             return "No benchmark scores available."
 
-        lines = [
-            "=" * 100,
-            "ENDPOINT BENCHMARK COMPARISON",
-            "=" * 100,
-            ""
-        ]
+        lines = ["=" * 100, "ENDPOINT BENCHMARK COMPARISON", "=" * 100, ""]
 
         # Header
         header = f"{'Rank':<6} {'Grade':<7} {'Score':<8} {'Endpoint':<40} {'Details':<30}"
@@ -353,8 +353,9 @@ class BenchmarkComparator:
         return "\n".join(lines)
 
     @staticmethod
-    def find_best_endpoint(scores: List[BenchmarkScore],
-                          criterion: Optional[ScoringCriteria] = None) -> Optional[BenchmarkScore]:
+    def find_best_endpoint(
+        scores: List[BenchmarkScore], criterion: Optional[ScoringCriteria] = None
+    ) -> Optional[BenchmarkScore]:
         """
         Find best endpoint overall or by specific criterion.
 
@@ -369,10 +370,7 @@ class BenchmarkComparator:
             return None
 
         if criterion:
-            return max(
-                scores,
-                key=lambda x: x.criteria_scores.get(criterion.value, 0)
-            )
+            return max(scores, key=lambda x: x.criteria_scores.get(criterion.value, 0))
         else:
             return max(scores, key=lambda x: x.overall_score)
 
@@ -392,18 +390,18 @@ class BenchmarkComparator:
 
         # Find best by criteria
         criteria_leaders = {
-            'Lowest Latency': max(scores, key=lambda x: x.criteria_scores.get('latency', 0)),
-            'Highest Success Rate': max(scores, key=lambda x: x.criteria_scores.get('success_rate', 0)),
-            'Most Consistent': max(scores, key=lambda x: x.criteria_scores.get('consistency', 0))
+            "Lowest Latency": max(scores, key=lambda x: x.criteria_scores.get("latency", 0)),
+            "Highest Success Rate": max(
+                scores, key=lambda x: x.criteria_scores.get("success_rate", 0)
+            ),
+            "Most Consistent": max(scores, key=lambda x: x.criteria_scores.get("consistency", 0)),
         }
 
         for criterion_name, leader in criteria_leaders.items():
-            recommendations.append(
-                f"{criterion_name}: {leader.endpoint}"
-            )
+            recommendations.append(f"{criterion_name}: {leader.endpoint}")
 
         # Identify underperformers
-        poor_performers = [s for s in scores if s.grade in ['D', 'F']]
+        poor_performers = [s for s in scores if s.grade in ["D", "F"]]
         if poor_performers:
             recommendations.append(
                 f"\nWarning: {len(poor_performers)} endpoint(s) with poor performance (Grade D/F)"

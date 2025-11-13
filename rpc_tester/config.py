@@ -2,11 +2,12 @@
 Configuration management for RPC Tester.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 import json
-import yaml
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import List, Optional
+
+import yaml
 
 
 @dataclass
@@ -24,12 +25,9 @@ class Config:
     retry_delay: float = 1.0
 
     # RPC methods to test
-    test_methods: List[str] = field(default_factory=lambda: [
-        "eth_blockNumber",
-        "eth_chainId",
-        "eth_gasPrice",
-        "net_version"
-    ])
+    test_methods: List[str] = field(
+        default_factory=lambda: ["eth_blockNumber", "eth_chainId", "eth_gasPrice", "net_version"]
+    )
 
     # Advanced test parameters
     test_eth_call: bool = False
@@ -56,10 +54,10 @@ class Config:
         if not path.exists():
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
-        with open(path, 'r') as f:
-            if path.suffix in ['.yaml', '.yml']:
+        with open(path, "r") as f:
+            if path.suffix in [".yaml", ".yml"]:
                 data = yaml.safe_load(f)
-            elif path.suffix == '.json':
+            elif path.suffix == ".json":
                 data = json.load(f)
             else:
                 raise ValueError(f"Unsupported config file format: {path.suffix}")
@@ -72,30 +70,30 @@ class Config:
         path.parent.mkdir(parents=True, exist_ok=True)
 
         data = {
-            'rpc_urls': self.rpc_urls,
-            'num_requests': self.num_requests,
-            'concurrent_requests': self.concurrent_requests,
-            'timeout': self.timeout,
-            'retry_attempts': self.retry_attempts,
-            'retry_delay': self.retry_delay,
-            'test_methods': self.test_methods,
-            'test_eth_call': self.test_eth_call,
-            'test_eth_getLogs': self.test_eth_getLogs,
-            'test_address': self.test_address,
-            'test_block_range': self.test_block_range,
-            'export_json': self.export_json,
-            'export_csv': self.export_csv,
-            'export_html': self.export_html,
-            'output_dir': self.output_dir,
-            'verbose': self.verbose,
-            'quiet': self.quiet,
-            'show_percentiles': self.show_percentiles
+            "rpc_urls": self.rpc_urls,
+            "num_requests": self.num_requests,
+            "concurrent_requests": self.concurrent_requests,
+            "timeout": self.timeout,
+            "retry_attempts": self.retry_attempts,
+            "retry_delay": self.retry_delay,
+            "test_methods": self.test_methods,
+            "test_eth_call": self.test_eth_call,
+            "test_eth_getLogs": self.test_eth_getLogs,
+            "test_address": self.test_address,
+            "test_block_range": self.test_block_range,
+            "export_json": self.export_json,
+            "export_csv": self.export_csv,
+            "export_html": self.export_html,
+            "output_dir": self.output_dir,
+            "verbose": self.verbose,
+            "quiet": self.quiet,
+            "show_percentiles": self.show_percentiles,
         }
 
-        with open(path, 'w') as f:
-            if path.suffix in ['.yaml', '.yml']:
+        with open(path, "w") as f:
+            if path.suffix in [".yaml", ".yml"]:
                 yaml.dump(data, f, default_flow_style=False)
-            elif path.suffix == '.json':
+            elif path.suffix == ".json":
                 json.dump(data, f, indent=2)
             else:
                 raise ValueError(f"Unsupported config file format: {path.suffix}")

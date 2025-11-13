@@ -5,15 +5,16 @@ Schedule and run RPC tests at specified intervals.
 """
 
 import asyncio
-from typing import Dict, List, Optional, Any, Callable
+import json
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 from enum import Enum
-import json
+from typing import Any, Callable, Dict, List, Optional
 
 
 class ScheduleType(Enum):
     """Types of schedules."""
+
     ONCE = "once"
     INTERVAL = "interval"
     DAILY = "daily"
@@ -24,6 +25,7 @@ class ScheduleType(Enum):
 @dataclass
 class ScheduledTask:
     """Scheduled test task."""
+
     task_id: str
     name: str
     schedule_type: ScheduleType
@@ -45,9 +47,9 @@ class TestScheduler:
         self._scheduler_task: Optional[asyncio.Task] = None
         self.callbacks: List[Callable] = []
 
-    def add_interval_task(self, task_id: str, name: str,
-                         interval_seconds: int,
-                         test_config: Dict[str, Any]):
+    def add_interval_task(
+        self, task_id: str, name: str, interval_seconds: int, test_config: Dict[str, Any]
+    ):
         """
         Add task that runs at regular intervals.
 
@@ -61,15 +63,13 @@ class TestScheduler:
             task_id=task_id,
             name=name,
             schedule_type=ScheduleType.INTERVAL,
-            config={'interval_seconds': interval_seconds},
+            config={"interval_seconds": interval_seconds},
             test_config=test_config,
-            next_run=datetime.now()
+            next_run=datetime.now(),
         )
         self.tasks[task_id] = task
 
-    def add_daily_task(self, task_id: str, name: str,
-                      run_time: time,
-                      test_config: Dict[str, Any]):
+    def add_daily_task(self, task_id: str, name: str, run_time: time, test_config: Dict[str, Any]):
         """
         Add task that runs daily at specific time.
 
@@ -83,15 +83,15 @@ class TestScheduler:
             task_id=task_id,
             name=name,
             schedule_type=ScheduleType.DAILY,
-            config={'run_time': run_time.isoformat()},
+            config={"run_time": run_time.isoformat()},
             test_config=test_config,
-            next_run=self._calculate_next_daily_run(run_time)
+            next_run=self._calculate_next_daily_run(run_time),
         )
         self.tasks[task_id] = task
 
-    def add_weekly_task(self, task_id: str, name: str,
-                       weekday: int, run_time: time,
-                       test_config: Dict[str, Any]):
+    def add_weekly_task(
+        self, task_id: str, name: str, weekday: int, run_time: time, test_config: Dict[str, Any]
+    ):
         """
         Add task that runs weekly on specific day.
 
@@ -106,18 +106,13 @@ class TestScheduler:
             task_id=task_id,
             name=name,
             schedule_type=ScheduleType.WEEKLY,
-            config={
-                'weekday': weekday,
-                'run_time': run_time.isoformat()
-            },
+            config={"weekday": weekday, "run_time": run_time.isoformat()},
             test_config=test_config,
-            next_run=self._calculate_next_weekly_run(weekday, run_time)
+            next_run=self._calculate_next_weekly_run(weekday, run_time),
         )
         self.tasks[task_id] = task
 
-    def add_once_task(self, task_id: str, name: str,
-                     run_at: datetime,
-                     test_config: Dict[str, Any]):
+    def add_once_task(self, task_id: str, name: str, run_at: datetime, test_config: Dict[str, Any]):
         """
         Add task that runs once at specific time.
 
@@ -131,9 +126,9 @@ class TestScheduler:
             task_id=task_id,
             name=name,
             schedule_type=ScheduleType.ONCE,
-            config={'run_at': run_at.isoformat()},
+            config={"run_at": run_at.isoformat()},
             test_config=test_config,
-            next_run=run_at
+            next_run=run_at,
         )
         self.tasks[task_id] = task
 
@@ -246,24 +241,24 @@ class TestScheduler:
         # Placeholder implementation
         await asyncio.sleep(0.1)
         return {
-            'status': 'completed',
-            'timestamp': datetime.now().isoformat(),
-            'config': test_config
+            "status": "completed",
+            "timestamp": datetime.now().isoformat(),
+            "config": test_config,
         }
 
     def _calculate_next_run(self, task: ScheduledTask) -> Optional[datetime]:
         """Calculate next run time for task."""
         if task.schedule_type == ScheduleType.INTERVAL:
-            interval = task.config['interval_seconds']
+            interval = task.config["interval_seconds"]
             return datetime.now() + timedelta(seconds=interval)
 
         elif task.schedule_type == ScheduleType.DAILY:
-            run_time = time.fromisoformat(task.config['run_time'])
+            run_time = time.fromisoformat(task.config["run_time"])
             return self._calculate_next_daily_run(run_time)
 
         elif task.schedule_type == ScheduleType.WEEKLY:
-            weekday = task.config['weekday']
-            run_time = time.fromisoformat(task.config['run_time'])
+            weekday = task.config["weekday"]
+            run_time = time.fromisoformat(task.config["run_time"])
             return self._calculate_next_weekly_run(weekday, run_time)
 
         elif task.schedule_type == ScheduleType.ONCE:
@@ -303,21 +298,18 @@ class TestScheduler:
         task = self.tasks[task_id]
 
         return {
-            'task_id': task.task_id,
-            'name': task.name,
-            'schedule_type': task.schedule_type.value,
-            'enabled': task.enabled,
-            'last_run': task.last_run.isoformat() if task.last_run else None,
-            'next_run': task.next_run.isoformat() if task.next_run else None,
-            'run_count': task.run_count
+            "task_id": task.task_id,
+            "name": task.name,
+            "schedule_type": task.schedule_type.value,
+            "enabled": task.enabled,
+            "last_run": task.last_run.isoformat() if task.last_run else None,
+            "next_run": task.next_run.isoformat() if task.next_run else None,
+            "run_count": task.run_count,
         }
 
     def get_all_tasks(self) -> List[Dict[str, Any]]:
         """Get status of all tasks."""
-        return [
-            self.get_task_status(task_id)
-            for task_id in self.tasks.keys()
-        ]
+        return [self.get_task_status(task_id) for task_id in self.tasks.keys()]
 
     def save_schedule(self, file_path: str):
         """
@@ -330,16 +322,16 @@ class TestScheduler:
 
         for task in self.tasks.values():
             task_data = {
-                'task_id': task.task_id,
-                'name': task.name,
-                'schedule_type': task.schedule_type.value,
-                'config': task.config,
-                'test_config': task.test_config,
-                'enabled': task.enabled
+                "task_id": task.task_id,
+                "name": task.name,
+                "schedule_type": task.schedule_type.value,
+                "config": task.config,
+                "test_config": task.test_config,
+                "enabled": task.enabled,
             }
             data.append(task_data)
 
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             json.dump(data, f, indent=2)
 
     def load_schedule(self, file_path: str):
@@ -349,33 +341,33 @@ class TestScheduler:
         Args:
             file_path: Path to schedule file
         """
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
 
         for task_data in data:
-            schedule_type = ScheduleType(task_data['schedule_type'])
+            schedule_type = ScheduleType(task_data["schedule_type"])
 
             task = ScheduledTask(
-                task_id=task_data['task_id'],
-                name=task_data['name'],
+                task_id=task_data["task_id"],
+                name=task_data["name"],
                 schedule_type=schedule_type,
-                config=task_data['config'],
-                test_config=task_data['test_config'],
-                enabled=task_data.get('enabled', True)
+                config=task_data["config"],
+                test_config=task_data["test_config"],
+                enabled=task_data.get("enabled", True),
             )
 
             # Calculate next run
             if schedule_type == ScheduleType.INTERVAL:
                 task.next_run = datetime.now()
             elif schedule_type == ScheduleType.DAILY:
-                run_time = time.fromisoformat(task.config['run_time'])
+                run_time = time.fromisoformat(task.config["run_time"])
                 task.next_run = self._calculate_next_daily_run(run_time)
             elif schedule_type == ScheduleType.WEEKLY:
-                weekday = task.config['weekday']
-                run_time = time.fromisoformat(task.config['run_time'])
+                weekday = task.config["weekday"]
+                run_time = time.fromisoformat(task.config["run_time"])
                 task.next_run = self._calculate_next_weekly_run(weekday, run_time)
             elif schedule_type == ScheduleType.ONCE:
-                run_at = datetime.fromisoformat(task.config['run_at'])
+                run_at = datetime.fromisoformat(task.config["run_at"])
                 task.next_run = run_at if run_at > datetime.now() else None
 
             self.tasks[task.task_id] = task

@@ -3,19 +3,20 @@ Core RPC testing functionality.
 """
 
 import asyncio
-import aiohttp
-import time
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field
-import statistics
-from datetime import datetime
 import logging
+import statistics
+import time
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class TestResult:
+class RpcTestResult:
     """Result of a single RPC test."""
 
     url: str
@@ -55,7 +56,7 @@ class RPCTester:
     def __init__(self, config):
         """Initialize the RPC tester."""
         self.config = config
-        self.results: List[TestResult] = []
+        self.results: List[RpcTestResult] = []
         self.session: Optional[aiohttp.ClientSession] = None
 
     async def __aenter__(self):
@@ -70,23 +71,14 @@ class RPCTester:
             await self.session.close()
 
     async def _make_rpc_request(
-        self,
-        url: str,
-        method: str,
-        params: Optional[List[Any]] = None,
-        attempt: int = 1
-    ) -> TestResult:
+        self, url: str, method: str, params: Optional[List[Any]] = None, attempt: int = 1
+    ) -> RpcTestResult:
         """Make a single RPC request with retry logic."""
 
         if params is None:
             params = []
 
-        payload = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": method,
-            "params": params
-        }
+        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
 
         start_time = time.perf_counter()
         error = None
@@ -109,7 +101,7 @@ class RPCTester:
                             response_data = data.get("result")
                             success = True
 
-                        return TestResult(
+                        return RpcTestResult(
                             url=url,
                             method=method,
                             success=success,
@@ -117,13 +109,13 @@ class RPCTester:
                             error=error,
                             response_data=response_data,
                             status_code=status_code,
-                            attempt=retry + 1
+                            attempt=retry + 1,
                         )
                     else:
                         error = f"HTTP {resp.status}"
                         # Retry on server errors
                         if resp.status >= 500 and retry < self.config.retry_attempts - 1:
-                            await asyncio.sleep(self.config.retry_delay * (2 ** retry))
+                            await asyncio.sleep(self.config.retry_delay * (2**retry))
                             continue
                         else:
                             break
@@ -131,7 +123,7 @@ class RPCTester:
             except asyncio.TimeoutError:
                 error = "Timeout"
                 if retry < self.config.retry_attempts - 1:
-                    await asyncio.sleep(self.config.retry_delay * (2 ** retry))
+                    await asyncio.sleep(self.config.retry_delay * (2**retry))
                     continue
                 else:
                     break
@@ -139,28 +131,25 @@ class RPCTester:
             except Exception as e:
                 error = str(e)
                 if retry < self.config.retry_attempts - 1:
-                    await asyncio.sleep(self.config.retry_delay * (2 ** retry))
+                    await asyncio.sleep(self.config.retry_delay * (2**retry))
                     continue
                 else:
                     break
 
         latency = (time.perf_counter() - start_time) * 1000
-        return TestResult(
+        return RpcTestResult(
             url=url,
             method=method,
             success=False,
             latency_ms=latency,
             error=error,
             status_code=status_code,
-            attempt=self.config.retry_attempts
+            attempt=self.config.retry_attempts,
         )
 
     async def test_endpoint(
-        self,
-        url: str,
-        method: str,
-        params: Optional[List[Any]] = None
-    ) -> List[TestResult]:
+        self, url: str, method: str, params: Optional[List[Any]] = None
+    ) -> List[RpcTestResult]:
         """Test an endpoint with multiple requests."""
 
         tasks = []
@@ -182,7 +171,7 @@ class RPCTester:
 
         return [r for r in self.results if r.url == url and r.method == method]
 
-    async def test_all_endpoints(self) -> Dict[str, Dict[str, List[TestResult]]]:
+    async def test_all_endpoints(self) -> Dict[str, Dict[str, List[RpcTestResult]]]:
         """Test all configured endpoints with all methods."""
 
         results_by_endpoint = {}
@@ -237,17 +226,10 @@ class RPCTester:
         else:
             return []
 
-    def calculate_statistics(
-        self,
-        url: str,
-        method: str
-    ) -> Optional[EndpointStats]:
+    def calculate_statistics(self, url: str, method: str) -> Optional[EndpointStats]:
         """Calculate statistics for an endpoint/method combination."""
 
-        endpoint_results = [
-            r for r in self.results
-            if r.url == url and r.method == method
-        ]
+        endpoint_results = [r for r in self.results if r.url == url and r.method == method]
 
         if not endpoint_results:
             return None
@@ -272,7 +254,7 @@ class RPCTester:
                 p50_latency=0.0,
                 p95_latency=0.0,
                 p99_latency=0.0,
-                errors=[r.error for r in failed if r.error]
+                errors=[r.error for r in failed if r.error],
             )
 
         return EndpointStats(
@@ -289,7 +271,7 @@ class RPCTester:
             p50_latency=statistics.median(latencies),
             p95_latency=self._percentile(latencies, 0.95),
             p99_latency=self._percentile(latencies, 0.99),
-            errors=[r.error for r in failed if r.error]
+            errors=[r.error for r in failed if r.error],
         )
 
     @staticmethod

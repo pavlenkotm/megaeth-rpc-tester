@@ -4,10 +4,10 @@ Health check and monitoring for RPC endpoints.
 
 import asyncio
 import time
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class HealthStatus(Enum):
@@ -38,7 +38,7 @@ class HealthChecker:
         self,
         healthy_threshold_ms: float = 1000.0,
         degraded_threshold_ms: float = 3000.0,
-        check_interval: float = 60.0
+        check_interval: float = 60.0,
     ):
         """
         Initialize health checker.
@@ -56,10 +56,7 @@ class HealthChecker:
         self.tasks: List[asyncio.Task] = []
 
     async def check_endpoint(
-        self,
-        url: str,
-        method: str = "eth_blockNumber",
-        params: Optional[List] = None
+        self, url: str, method: str = "eth_blockNumber", params: Optional[List] = None
     ) -> HealthCheckResult:
         """
         Perform health check on endpoint.
@@ -80,12 +77,7 @@ class HealthChecker:
         try:
             timeout = aiohttp.ClientTimeout(total=10.0)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                payload = {
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "method": method,
-                    "params": params or []
-                }
+                payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params or []}
 
                 async with session.post(url, json=payload) as resp:
                     latency = (time.perf_counter() - start_time) * 1000
@@ -123,7 +115,7 @@ class HealthChecker:
                         status=status,
                         latency_ms=latency,
                         details=details,
-                        error=error
+                        error=error,
                     )
 
         except asyncio.TimeoutError:
@@ -134,7 +126,7 @@ class HealthChecker:
                 status=HealthStatus.UNHEALTHY,
                 latency_ms=latency,
                 details={"error_type": "timeout"},
-                error="Request timeout"
+                error="Request timeout",
             )
 
         except Exception as e:
@@ -145,14 +137,11 @@ class HealthChecker:
                 status=HealthStatus.UNHEALTHY,
                 latency_ms=latency,
                 details={"error_type": "connection_error"},
-                error=str(e)
+                error=str(e),
             )
 
     async def monitor_endpoint(
-        self,
-        url: str,
-        method: str = "eth_blockNumber",
-        params: Optional[List] = None
+        self, url: str, method: str = "eth_blockNumber", params: Optional[List] = None
     ):
         """
         Continuously monitor endpoint health.
@@ -176,10 +165,7 @@ class HealthChecker:
             await asyncio.sleep(self.check_interval)
 
     def start_monitoring(
-        self,
-        urls: List[str],
-        method: str = "eth_blockNumber",
-        params: Optional[List] = None
+        self, urls: List[str], method: str = "eth_blockNumber", params: Optional[List] = None
     ):
         """
         Start monitoring multiple endpoints.
@@ -192,9 +178,7 @@ class HealthChecker:
         self.running = True
 
         for url in urls:
-            task = asyncio.create_task(
-                self.monitor_endpoint(url, method, params)
-            )
+            task = asyncio.create_task(self.monitor_endpoint(url, method, params))
             self.tasks.append(task)
 
     async def stop_monitoring(self):
@@ -222,11 +206,7 @@ class HealthChecker:
 
         return self.results[url][-1].status
 
-    def get_uptime_percentage(
-        self,
-        url: str,
-        time_window: Optional[timedelta] = None
-    ) -> float:
+    def get_uptime_percentage(self, url: str, time_window: Optional[timedelta] = None) -> float:
         """
         Calculate uptime percentage for endpoint.
 
@@ -250,17 +230,12 @@ class HealthChecker:
             return 0.0
 
         healthy_count = sum(
-            1 for r in results
-            if r.status in (HealthStatus.HEALTHY, HealthStatus.DEGRADED)
+            1 for r in results if r.status in (HealthStatus.HEALTHY, HealthStatus.DEGRADED)
         )
 
         return (healthy_count / len(results)) * 100
 
-    def get_average_latency(
-        self,
-        url: str,
-        time_window: Optional[timedelta] = None
-    ) -> float:
+    def get_average_latency(self, url: str, time_window: Optional[timedelta] = None) -> float:
         """
         Calculate average latency for endpoint.
 
@@ -291,11 +266,7 @@ class HealthChecker:
 
         return sum(r.latency_ms for r in successful) / len(successful)
 
-    def get_error_rate(
-        self,
-        url: str,
-        time_window: Optional[timedelta] = None
-    ) -> float:
+    def get_error_rate(self, url: str, time_window: Optional[timedelta] = None) -> float:
         """
         Calculate error rate for endpoint.
 
@@ -322,9 +293,7 @@ class HealthChecker:
         return (error_count / len(results)) * 100
 
     def get_health_summary(
-        self,
-        url: str,
-        time_window: Optional[timedelta] = None
+        self, url: str, time_window: Optional[timedelta] = None
     ) -> Dict[str, Any]:
         """
         Get comprehensive health summary for endpoint.
@@ -343,7 +312,7 @@ class HealthChecker:
                 "uptime_percentage": 0.0,
                 "avg_latency_ms": 0.0,
                 "error_rate": 0.0,
-                "total_checks": 0
+                "total_checks": 0,
             }
 
         results = self.results[url]
@@ -358,11 +327,7 @@ class HealthChecker:
         error_rate = self.get_error_rate(url, time_window)
 
         # Count status distribution
-        status_counts = {
-            "healthy": 0,
-            "degraded": 0,
-            "unhealthy": 0
-        }
+        status_counts = {"healthy": 0, "degraded": 0, "unhealthy": 0}
 
         for result in results:
             if result.status == HealthStatus.HEALTHY:
@@ -380,7 +345,7 @@ class HealthChecker:
             "error_rate": error_rate,
             "total_checks": len(results),
             "status_distribution": status_counts,
-            "last_check": results[-1].timestamp.isoformat() if results else None
+            "last_check": results[-1].timestamp.isoformat() if results else None,
         }
 
     def export_health_data(self) -> Dict[str, Any]:
@@ -393,10 +358,10 @@ class HealthChecker:
                         "timestamp": r.timestamp.isoformat(),
                         "status": r.status.value,
                         "latency_ms": r.latency_ms,
-                        "error": r.error
+                        "error": r.error,
                     }
                     for r in self.results[url][-10:]  # Last 10 checks
-                ]
+                ],
             }
             for url in self.results.keys()
         }

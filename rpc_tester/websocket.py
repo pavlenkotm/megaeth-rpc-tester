@@ -5,10 +5,11 @@ WebSocket support for RPC testing.
 import asyncio
 import json
 import time
-from typing import Optional, Any, Dict, List
-import aiohttp
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 
 
 @dataclass
@@ -26,12 +27,9 @@ class WebSocketMessage:
 
     def to_json(self) -> str:
         """Convert message to JSON-RPC format."""
-        return json.dumps({
-            "jsonrpc": "2.0",
-            "id": self.id,
-            "method": self.method,
-            "params": self.params
-        })
+        return json.dumps(
+            {"jsonrpc": "2.0", "id": self.id, "method": self.method, "params": self.params}
+        )
 
 
 @dataclass
@@ -52,12 +50,7 @@ class WebSocketResponse:
 class WebSocketTester:
     """WebSocket RPC endpoint tester."""
 
-    def __init__(
-        self,
-        url: str,
-        timeout: float = 30.0,
-        max_retries: int = 3
-    ):
+    def __init__(self, url: str, timeout: float = 30.0, max_retries: int = 3):
         """
         Initialize WebSocket tester.
 
@@ -91,16 +84,13 @@ class WebSocketTester:
         for attempt in range(self.max_retries):
             try:
                 self.ws = await self.session.ws_connect(
-                    self.url,
-                    timeout=self.timeout,
-                    autoping=True,
-                    heartbeat=30.0
+                    self.url, timeout=self.timeout, autoping=True, heartbeat=30.0
                 )
                 return
             except Exception as e:
                 if attempt == self.max_retries - 1:
                     raise ConnectionError(f"Failed to connect to {self.url}: {str(e)}")
-                await asyncio.sleep(1 * (2 ** attempt))  # Exponential backoff
+                await asyncio.sleep(1 * (2**attempt))  # Exponential backoff
 
     async def disconnect(self):
         """Close WebSocket connection."""
@@ -115,9 +105,7 @@ class WebSocketTester:
         return self.message_id
 
     async def send_request(
-        self,
-        method: str,
-        params: Optional[List[Any]] = None
+        self, method: str, params: Optional[List[Any]] = None
     ) -> WebSocketResponse:
         """
         Send a single RPC request over WebSocket.
@@ -133,11 +121,7 @@ class WebSocketTester:
             raise ConnectionError("WebSocket connection is not open")
 
         message_id = self._get_next_id()
-        message = WebSocketMessage(
-            id=message_id,
-            method=method,
-            params=params or []
-        )
+        message = WebSocketMessage(id=message_id, method=method, params=params or [])
 
         start_time = time.perf_counter()
         self.pending_requests[message_id] = start_time
@@ -159,7 +143,7 @@ class WebSocketTester:
                                 id=message_id,
                                 result=data.get("result"),
                                 error=data.get("error"),
-                                latency_ms=latency
+                                latency_ms=latency,
                             )
 
                             self.responses.append(response)
@@ -184,8 +168,7 @@ class WebSocketTester:
             raise
 
     async def send_batch(
-        self,
-        requests: List[tuple[str, Optional[List[Any]]]]
+        self, requests: List[tuple[str, Optional[List[Any]]]]
     ) -> List[WebSocketResponse]:
         """
         Send multiple RPC requests concurrently.
@@ -196,18 +179,12 @@ class WebSocketTester:
         Returns:
             List of WebSocketResponse objects
         """
-        tasks = [
-            self.send_request(method, params)
-            for method, params in requests
-        ]
+        tasks = [self.send_request(method, params) for method, params in requests]
 
         return await asyncio.gather(*tasks, return_exceptions=True)
 
     async def test_endpoint(
-        self,
-        method: str,
-        params: Optional[List[Any]] = None,
-        num_requests: int = 10
+        self, method: str, params: Optional[List[Any]] = None, num_requests: int = 10
     ) -> List[WebSocketResponse]:
         """
         Test endpoint with multiple requests.
@@ -229,8 +206,7 @@ class WebSocketTester:
             except Exception as e:
                 # Create error response
                 error_response = WebSocketResponse(
-                    id=self._get_next_id(),
-                    error={"code": -1, "message": str(e)}
+                    id=self._get_next_id(), error={"code": -1, "message": str(e)}
                 )
                 results.append(error_response)
 
@@ -240,7 +216,7 @@ class WebSocketTester:
         self,
         subscription_type: str,
         params: Optional[List[Any]] = None,
-        callback: Optional[callable] = None
+        callback: Optional[callable] = None,
     ) -> str:
         """
         Subscribe to WebSocket notifications.
@@ -254,10 +230,7 @@ class WebSocketTester:
             Subscription ID
         """
         # Send subscription request
-        response = await self.send_request(
-            "eth_subscribe",
-            [subscription_type] + (params or [])
-        )
+        response = await self.send_request("eth_subscribe", [subscription_type] + (params or []))
 
         if response.error:
             raise Exception(f"Subscription failed: {response.error}")
@@ -266,17 +239,11 @@ class WebSocketTester:
 
         # Start listening for notifications if callback provided
         if callback:
-            asyncio.create_task(
-                self._listen_for_notifications(subscription_id, callback)
-            )
+            asyncio.create_task(self._listen_for_notifications(subscription_id, callback))
 
         return subscription_id
 
-    async def _listen_for_notifications(
-        self,
-        subscription_id: str,
-        callback: callable
-    ):
+    async def _listen_for_notifications(self, subscription_id: str, callback: callable):
         """Listen for subscription notifications."""
         try:
             async for msg in self.ws:
@@ -284,8 +251,10 @@ class WebSocketTester:
                     data = json.loads(msg.data)
 
                     # Check if it's a notification for our subscription
-                    if (data.get("method") == "eth_subscription" and
-                        data.get("params", {}).get("subscription") == subscription_id):
+                    if (
+                        data.get("method") == "eth_subscription"
+                        and data.get("params", {}).get("subscription") == subscription_id
+                    ):
 
                         notification_data = data["params"]["result"]
                         await callback(notification_data)
@@ -306,10 +275,7 @@ class WebSocketTester:
         Returns:
             True if successful
         """
-        response = await self.send_request(
-            "eth_unsubscribe",
-            [subscription_id]
-        )
+        response = await self.send_request("eth_unsubscribe", [subscription_id])
 
         if response.error:
             raise Exception(f"Unsubscribe failed: {response.error}")
@@ -325,7 +291,7 @@ class WebSocketTester:
                 "failed_requests": 0,
                 "avg_latency_ms": 0.0,
                 "min_latency_ms": 0.0,
-                "max_latency_ms": 0.0
+                "max_latency_ms": 0.0,
             }
 
         successful = [r for r in self.responses if r.error is None]
@@ -339,5 +305,5 @@ class WebSocketTester:
             "success_rate": len(successful) / len(self.responses) * 100,
             "avg_latency_ms": sum(latencies) / len(latencies) if latencies else 0,
             "min_latency_ms": min(latencies) if latencies else 0,
-            "max_latency_ms": max(latencies) if latencies else 0
+            "max_latency_ms": max(latencies) if latencies else 0,
         }
