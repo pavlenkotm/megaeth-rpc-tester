@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ethers, Contract, BrowserProvider } from 'ethers';
+import { Contract, BrowserProvider } from 'ethers';
 
 /**
  * Custom React Hook for interacting with smart contracts

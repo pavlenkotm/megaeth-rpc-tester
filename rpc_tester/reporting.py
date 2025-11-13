@@ -2,12 +2,13 @@
 Results reporting and export functionality.
 """
 
-import json
 import csv
+import json
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
-from datetime import datetime
-from .core import EndpointStats, TestResult
+
+from .core import EndpointStats, RpcTestResult
 
 
 class Reporter:
@@ -18,11 +19,7 @@ class Reporter:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def export_json(
-        self,
-        stats: Dict[str, Dict[str, EndpointStats]],
-        filename: str = None
-    ) -> str:
+    def export_json(self, stats: Dict[str, Dict[str, EndpointStats]], filename: str = None) -> str:
         """Export results to JSON."""
 
         if filename is None:
@@ -45,19 +42,15 @@ class Reporter:
                     "p50_latency_ms": stat.p50_latency,
                     "p95_latency_ms": stat.p95_latency,
                     "p99_latency_ms": stat.p99_latency,
-                    "errors": stat.errors[:10]  # Limit errors in output
+                    "errors": stat.errors[:10],  # Limit errors in output
                 }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
         return str(filepath)
 
-    def export_csv(
-        self,
-        stats: Dict[str, Dict[str, EndpointStats]],
-        filename: str = None
-    ) -> str:
+    def export_csv(self, stats: Dict[str, Dict[str, EndpointStats]], filename: str = None) -> str:
         """Export results to CSV."""
 
         if filename is None:
@@ -65,47 +58,47 @@ class Reporter:
 
         filepath = self.output_dir / filename
 
-        with open(filepath, 'w', newline='') as f:
+        with open(filepath, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                "URL",
-                "Method",
-                "Total Requests",
-                "Successful",
-                "Failed",
-                "Success Rate %",
-                "Avg Latency (ms)",
-                "Min Latency (ms)",
-                "Max Latency (ms)",
-                "P50 Latency (ms)",
-                "P95 Latency (ms)",
-                "P99 Latency (ms)"
-            ])
+            writer.writerow(
+                [
+                    "URL",
+                    "Method",
+                    "Total Requests",
+                    "Successful",
+                    "Failed",
+                    "Success Rate %",
+                    "Avg Latency (ms)",
+                    "Min Latency (ms)",
+                    "Max Latency (ms)",
+                    "P50 Latency (ms)",
+                    "P95 Latency (ms)",
+                    "P99 Latency (ms)",
+                ]
+            )
 
             for url, methods in stats.items():
                 for method, stat in methods.items():
-                    writer.writerow([
-                        url,
-                        method,
-                        stat.total_requests,
-                        stat.successful_requests,
-                        stat.failed_requests,
-                        f"{stat.success_rate:.2f}",
-                        f"{stat.avg_latency:.2f}",
-                        f"{stat.min_latency:.2f}",
-                        f"{stat.max_latency:.2f}",
-                        f"{stat.p50_latency:.2f}",
-                        f"{stat.p95_latency:.2f}",
-                        f"{stat.p99_latency:.2f}"
-                    ])
+                    writer.writerow(
+                        [
+                            url,
+                            method,
+                            stat.total_requests,
+                            stat.successful_requests,
+                            stat.failed_requests,
+                            f"{stat.success_rate:.2f}",
+                            f"{stat.avg_latency:.2f}",
+                            f"{stat.min_latency:.2f}",
+                            f"{stat.max_latency:.2f}",
+                            f"{stat.p50_latency:.2f}",
+                            f"{stat.p95_latency:.2f}",
+                            f"{stat.p99_latency:.2f}",
+                        ]
+                    )
 
         return str(filepath)
 
-    def export_html(
-        self,
-        stats: Dict[str, Dict[str, EndpointStats]],
-        filename: str = None
-    ) -> str:
+    def export_html(self, stats: Dict[str, Dict[str, EndpointStats]], filename: str = None) -> str:
         """Export results to HTML with styling."""
 
         if filename is None:
@@ -113,7 +106,8 @@ class Reporter:
 
         filepath = self.output_dir / filename
 
-        html = """
+        html = (
+            """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -199,14 +193,21 @@ class Reporter:
 <body>
     <div class="container">
         <h1>⚡ MegaETH RPC Test Results</h1>
-        <p class="timestamp">Generated: """ + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + """</p>
+        <p class="timestamp">Generated: """
+            + datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            + """</p>
 """
+        )
 
         for url, methods in stats.items():
             html += f"\n        <h2>🔗 {url}</h2>\n"
 
             for method, stat in methods.items():
-                success_class = "success" if stat.success_rate >= 95 else "warning" if stat.success_rate >= 80 else "error"
+                success_class = (
+                    "success"
+                    if stat.success_rate >= 95
+                    else "warning" if stat.success_rate >= 80 else "error"
+                )
 
                 html += f"""
         <h3>Method: {method}</h3>
@@ -274,14 +275,13 @@ class Reporter:
 </html>
 """
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(html)
 
         return str(filepath)
 
     def generate_comparison_table(
-        self,
-        stats: Dict[str, Dict[str, EndpointStats]]
+        self, stats: Dict[str, Dict[str, EndpointStats]]
     ) -> List[List[str]]:
         """Generate comparison table data."""
 
@@ -306,9 +306,7 @@ class Reporter:
         return rows
 
     def export_markdown(
-        self,
-        stats: Dict[str, Dict[str, EndpointStats]],
-        filename: str = None
+        self, stats: Dict[str, Dict[str, EndpointStats]], filename: str = None
     ) -> str:
         """Export results to Markdown."""
 
@@ -324,11 +322,17 @@ class Reporter:
             md += f"## 🔗 {url}\n\n"
 
             # Create table
-            md += "| Method | Requests | Success Rate | Avg Latency | Min | P50 | P95 | P99 | Max |\n"
-            md += "|--------|----------|--------------|-------------|-----|-----|-----|-----|-----|\n"
+            md += (
+                "| Method | Requests | Success Rate | Avg Latency | Min | P50 | P95 | P99 | Max |\n"
+            )
+            md += (
+                "|--------|----------|--------------|-------------|-----|-----|-----|-----|-----|\n"
+            )
 
             for method, stat in methods.items():
-                success_emoji = "✅" if stat.success_rate >= 95 else "⚠️" if stat.success_rate >= 80 else "❌"
+                success_emoji = (
+                    "✅" if stat.success_rate >= 95 else "⚠️" if stat.success_rate >= 80 else "❌"
+                )
 
                 md += f"| {method} | {stat.total_requests} | "
                 md += f"{success_emoji} {stat.success_rate:.1f}% | "
@@ -406,19 +410,13 @@ class Reporter:
         md += "### Overall Statistics\n\n"
 
         total_requests = sum(
-            stat.total_requests
-            for methods in stats.values()
-            for stat in methods.values()
+            stat.total_requests for methods in stats.values() for stat in methods.values()
         )
         total_successful = sum(
-            stat.successful_requests
-            for methods in stats.values()
-            for stat in methods.values()
+            stat.successful_requests for methods in stats.values() for stat in methods.values()
         )
         total_failed = sum(
-            stat.failed_requests
-            for methods in stats.values()
-            for stat in methods.values()
+            stat.failed_requests for methods in stats.values() for stat in methods.values()
         )
 
         md += f"- **Total Requests:** {total_requests}\n"
@@ -427,7 +425,7 @@ class Reporter:
         md += f"- **Endpoints Tested:** {len(stats)}\n"
         md += f"- **Methods Tested:** {len(all_methods) if len(stats) > 1 else len(next(iter(stats.values())))}\n"
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(md)
 
         return str(filepath)

@@ -4,12 +4,12 @@ Plugin system for extending RPC tester functionality.
 Allows custom plugins for pre/post-test hooks, custom metrics, and exporters.
 """
 
-from typing import Dict, List, Optional, Any, Callable
-from abc import ABC, abstractmethod
 import asyncio
 import importlib.util
 import sys
+from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 
 class Plugin(ABC):
@@ -58,8 +58,9 @@ class TestHookPlugin(Plugin):
         """Called before each request."""
         pass
 
-    async def on_request_complete(self, endpoint: str, method: str,
-                                  response_data: Dict[str, Any], latency: float):
+    async def on_request_complete(
+        self, endpoint: str, method: str, response_data: Dict[str, Any], latency: float
+    ):
         """Called after each request."""
         pass
 
@@ -72,8 +73,9 @@ class MetricsPlugin(Plugin):
     """Plugin that provides custom metrics collection."""
 
     @abstractmethod
-    async def collect_metrics(self, endpoint: str, method: str,
-                             results: Dict[str, Any]) -> Dict[str, Any]:
+    async def collect_metrics(
+        self, endpoint: str, method: str, results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Collect custom metrics.
 
@@ -150,7 +152,7 @@ class PluginManager:
         tasks = []
         for plugin in self.plugins.values():
             if plugin.enabled:
-                plugin_config = config.get('plugins', {}).get(plugin.name, {})
+                plugin_config = config.get("plugins", {}).get(plugin.name, {})
                 tasks.append(plugin.initialize(plugin_config))
 
         if tasks:
@@ -195,8 +197,9 @@ class PluginManager:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def trigger_request_complete(self, endpoint: str, method: str,
-                                      response_data: Dict[str, Any], latency: float):
+    async def trigger_request_complete(
+        self, endpoint: str, method: str, response_data: Dict[str, Any], latency: float
+    ):
         """Trigger request complete hooks."""
         tasks = []
         for plugin in self.hook_plugins:
@@ -216,8 +219,9 @@ class PluginManager:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def collect_all_metrics(self, endpoint: str, method: str,
-                                 results: Dict[str, Any]) -> Dict[str, Any]:
+    async def collect_all_metrics(
+        self, endpoint: str, method: str, results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Collect metrics from all metrics plugins."""
         all_metrics = {}
 
@@ -265,12 +269,14 @@ class PluginManager:
                 # Look for Plugin class in module
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
-                    if (isinstance(attr, type) and
-                        issubclass(attr, Plugin) and
-                        attr != Plugin and
-                        attr != TestHookPlugin and
-                        attr != MetricsPlugin and
-                        attr != ExporterPlugin):
+                    if (
+                        isinstance(attr, type)
+                        and issubclass(attr, Plugin)
+                        and attr != Plugin
+                        and attr != TestHookPlugin
+                        and attr != MetricsPlugin
+                        and attr != ExporterPlugin
+                    ):
 
                         plugin_instance = attr()
                         self.register_plugin(plugin_instance)
@@ -297,6 +303,7 @@ class PluginManager:
 
 # Example built-in plugins
 
+
 class LoggingPlugin(TestHookPlugin):
     """Example plugin that logs test events."""
 
@@ -306,8 +313,8 @@ class LoggingPlugin(TestHookPlugin):
 
     async def initialize(self, config: Dict[str, Any]):
         """Initialize plugin."""
-        log_path = config.get('log_path', 'test_events.log')
-        self.log_file = open(log_path, 'a')
+        log_path = config.get("log_path", "test_events.log")
+        self.log_file = open(log_path, "a")
 
     async def cleanup(self):
         """Cleanup plugin."""
@@ -323,7 +330,7 @@ class LoggingPlugin(TestHookPlugin):
     async def on_test_complete(self, endpoint: str, method: str, results: Dict[str, Any]):
         """Log test completion."""
         if self.log_file:
-            success_rate = results.get('success_rate', 0)
+            success_rate = results.get("success_rate", 0)
             self.log_file.write(
                 f"[TEST COMPLETE] {endpoint} - {method} - Success Rate: {success_rate}%\n"
             )
@@ -344,21 +351,17 @@ class CustomMetricsPlugin(MetricsPlugin):
         """Cleanup plugin."""
         pass
 
-    async def collect_metrics(self, endpoint: str, method: str,
-                             results: Dict[str, Any]) -> Dict[str, Any]:
+    async def collect_metrics(
+        self, endpoint: str, method: str, results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Collect custom metrics."""
         # Example: Calculate additional custom metrics
-        latencies = results.get('latencies', [])
+        latencies = results.get("latencies", [])
 
         if latencies:
             # Calculate geometric mean
-            geometric_mean = (
-                sum(latencies) / len(latencies)
-            ) if latencies else 0
+            geometric_mean = (sum(latencies) / len(latencies)) if latencies else 0
 
-            return {
-                'geometric_mean_latency': geometric_mean,
-                'total_data_points': len(latencies)
-            }
+            return {"geometric_mean_latency": geometric_mean, "total_data_points": len(latencies)}
 
         return {}

@@ -4,9 +4,9 @@ Rate limiting functionality for RPC requests.
 
 import asyncio
 import time
-from typing import Dict, Optional
-from dataclasses import dataclass
 from collections import deque
+from dataclasses import dataclass
+from typing import Dict, Optional
 
 
 @dataclass
@@ -24,11 +24,7 @@ class RateLimitConfig:
 class TokenBucketRateLimiter:
     """Token bucket algorithm for rate limiting."""
 
-    def __init__(
-        self,
-        requests_per_second: float,
-        burst_size: Optional[int] = None
-    ):
+    def __init__(self, requests_per_second: float, burst_size: Optional[int] = None):
         """
         Initialize token bucket rate limiter.
 
@@ -57,10 +53,7 @@ class TokenBucketRateLimiter:
                 elapsed = now - self.last_update
 
                 # Add tokens based on elapsed time
-                self.tokens = min(
-                    self.burst_size,
-                    self.tokens + elapsed * self.rate
-                )
+                self.tokens = min(self.burst_size, self.tokens + elapsed * self.rate)
                 self.last_update = now
 
                 if self.tokens >= tokens:
@@ -75,20 +68,13 @@ class TokenBucketRateLimiter:
         """Get number of available tokens."""
         now = time.time()
         elapsed = now - self.last_update
-        return min(
-            self.burst_size,
-            self.tokens + elapsed * self.rate
-        )
+        return min(self.burst_size, self.tokens + elapsed * self.rate)
 
 
 class SlidingWindowRateLimiter:
     """Sliding window algorithm for rate limiting."""
 
-    def __init__(
-        self,
-        requests_per_second: float,
-        window_size: float = 1.0
-    ):
+    def __init__(self, requests_per_second: float, window_size: float = 1.0):
         """
         Initialize sliding window rate limiter.
 
@@ -187,14 +173,14 @@ class PerEndpointRateLimiter:
         if url not in self.limiters:
             return {
                 "rate_limit": self.custom_rates.get(url, self.default_rate),
-                "available_tokens": 0
+                "available_tokens": 0,
             }
 
         limiter = self.limiters[url]
         return {
             "rate_limit": limiter.rate,
             "burst_size": limiter.burst_size,
-            "available_tokens": limiter.get_available_tokens()
+            "available_tokens": limiter.get_available_tokens(),
         }
 
 
@@ -207,7 +193,7 @@ class AdaptiveRateLimiter:
         min_rate: float = 1.0,
         max_rate: float = 100.0,
         increase_factor: float = 1.2,
-        decrease_factor: float = 0.5
+        decrease_factor: float = 0.5,
     ):
         """
         Initialize adaptive rate limiter.
@@ -241,10 +227,7 @@ class AdaptiveRateLimiter:
 
             # Increase rate after 10 consecutive successes
             if self.consecutive_successes >= 10:
-                new_rate = min(
-                    self.max_rate,
-                    self.current_rate * self.increase_factor
-                )
+                new_rate = min(self.max_rate, self.current_rate * self.increase_factor)
                 if new_rate != self.current_rate:
                     self.current_rate = new_rate
                     self.limiter = TokenBucketRateLimiter(new_rate)
@@ -262,10 +245,7 @@ class AdaptiveRateLimiter:
 
             if is_rate_limit_error:
                 # Immediately decrease rate on rate limit error
-                new_rate = max(
-                    self.min_rate,
-                    self.current_rate * self.decrease_factor
-                )
+                new_rate = max(self.min_rate, self.current_rate * self.decrease_factor)
                 self.current_rate = new_rate
                 self.limiter = TokenBucketRateLimiter(new_rate)
                 self.consecutive_errors = 0
@@ -274,10 +254,7 @@ class AdaptiveRateLimiter:
 
                 # Decrease rate after 3 consecutive errors
                 if self.consecutive_errors >= 3:
-                    new_rate = max(
-                        self.min_rate,
-                        self.current_rate * self.decrease_factor
-                    )
+                    new_rate = max(self.min_rate, self.current_rate * self.decrease_factor)
                     if new_rate != self.current_rate:
                         self.current_rate = new_rate
                         self.limiter = TokenBucketRateLimiter(new_rate)
@@ -295,5 +272,5 @@ class AdaptiveRateLimiter:
             "max_rate": self.max_rate,
             "consecutive_successes": self.consecutive_successes,
             "consecutive_errors": self.consecutive_errors,
-            "available_tokens": self.limiter.get_available_tokens()
+            "available_tokens": self.limiter.get_available_tokens(),
         }

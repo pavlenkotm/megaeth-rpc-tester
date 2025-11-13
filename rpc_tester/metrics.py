@@ -2,12 +2,12 @@
 Advanced metrics tracking for RPC testing.
 """
 
+import statistics
 import time
-from typing import Dict, List, Optional, Any
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from collections import defaultdict
-import statistics
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -34,7 +34,7 @@ class AggregatedMetrics:
     failed_requests: int = 0
     cached_requests: int = 0
     total_latency_ms: float = 0.0
-    min_latency_ms: float = float('inf')
+    min_latency_ms: float = float("inf")
     max_latency_ms: float = 0.0
     latencies: List[float] = field(default_factory=list)
 
@@ -71,11 +71,15 @@ class AggregatedMetrics:
                 "median_latency_ms": 0.0,
                 "p95_latency_ms": 0.0,
                 "p99_latency_ms": 0.0,
-                "std_dev_ms": 0.0
+                "std_dev_ms": 0.0,
             }
 
-        success_rate = (self.successful_requests / self.total_requests * 100) if self.total_requests > 0 else 0
-        cache_hit_rate = (self.cached_requests / self.total_requests * 100) if self.total_requests > 0 else 0
+        success_rate = (
+            (self.successful_requests / self.total_requests * 100) if self.total_requests > 0 else 0
+        )
+        cache_hit_rate = (
+            (self.cached_requests / self.total_requests * 100) if self.total_requests > 0 else 0
+        )
 
         sorted_latencies = sorted(self.latencies)
         n = len(sorted_latencies)
@@ -93,7 +97,7 @@ class AggregatedMetrics:
             "median_latency_ms": statistics.median(self.latencies),
             "p95_latency_ms": sorted_latencies[int(n * 0.95)] if n > 0 else 0,
             "p99_latency_ms": sorted_latencies[int(n * 0.99)] if n > 0 else 0,
-            "std_dev_ms": statistics.stdev(self.latencies) if len(self.latencies) > 1 else 0.0
+            "std_dev_ms": statistics.stdev(self.latencies) if len(self.latencies) > 1 else 0.0,
         }
 
 
@@ -143,7 +147,11 @@ class MetricsCollector:
 
         summary = overall.get_summary()
         summary["duration_seconds"] = time.time() - self.start_time
-        summary["requests_per_second"] = len(self.requests) / summary["duration_seconds"] if summary["duration_seconds"] > 0 else 0
+        summary["requests_per_second"] = (
+            len(self.requests) / summary["duration_seconds"]
+            if summary["duration_seconds"] > 0
+            else 0
+        )
 
         return summary
 
@@ -214,12 +222,14 @@ class MetricsCollector:
         return {
             "overall": self.get_overall_summary(),
             "by_url": {url: metrics.get_summary() for url, metrics in self.by_url.items()},
-            "by_method": {method: metrics.get_summary() for method, metrics in self.by_method.items()},
+            "by_method": {
+                method: metrics.get_summary() for method, metrics in self.by_method.items()
+            },
             "by_url_method": {
                 url: {method: metrics.get_summary() for method, metrics in methods.items()}
                 for url, methods in self.by_url_method.items()
             },
             "error_distribution": self.get_error_distribution(),
             "latency_histogram": self.get_latency_histogram(),
-            "time_series": self.get_time_series()
+            "time_series": self.get_time_series(),
         }

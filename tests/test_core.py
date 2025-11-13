@@ -2,11 +2,13 @@
 Unit tests for core RPC testing functionality.
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
-from rpc_tester.core import RPCTester, TestResult, EndpointStats
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
+
 from rpc_tester.config import Config
+from rpc_tester.core import EndpointStats, RPCTester, RpcTestResult
 
 
 @pytest.fixture
@@ -18,7 +20,7 @@ def config():
         concurrent_requests=2,
         timeout=10.0,
         retry_attempts=2,
-        test_methods=["eth_blockNumber"]
+        test_methods=["eth_blockNumber"],
     )
 
 
@@ -36,20 +38,15 @@ async def test_successful_rpc_request(config):
     """Test successful RPC request."""
     async with RPCTester(config) as tester:
         # Mock successful response
-        with patch.object(tester.session, 'post') as mock_post:
+        with patch.object(tester.session, "post") as mock_post:
             mock_response = AsyncMock()
             mock_response.status = 200
-            mock_response.json = AsyncMock(return_value={
-                "jsonrpc": "2.0",
-                "id": 1,
-                "result": "0x1234567"
-            })
+            mock_response.json = AsyncMock(
+                return_value={"jsonrpc": "2.0", "id": 1, "result": "0x1234567"}
+            )
             mock_post.return_value.__aenter__.return_value = mock_response
 
-            result = await tester._make_rpc_request(
-                "https://test.example.com",
-                "eth_blockNumber"
-            )
+            result = await tester._make_rpc_request("https://test.example.com", "eth_blockNumber")
 
             assert result.success is True
             assert result.error is None
@@ -62,15 +59,12 @@ async def test_failed_rpc_request(config):
     """Test failed RPC request."""
     async with RPCTester(config) as tester:
         # Mock failed response
-        with patch.object(tester.session, 'post') as mock_post:
+        with patch.object(tester.session, "post") as mock_post:
             mock_response = AsyncMock()
             mock_response.status = 500
             mock_post.return_value.__aenter__.return_value = mock_response
 
-            result = await tester._make_rpc_request(
-                "https://test.example.com",
-                "eth_blockNumber"
-            )
+            result = await tester._make_rpc_request("https://test.example.com", "eth_blockNumber")
 
             assert result.success is False
             assert result.error is not None
@@ -79,25 +73,19 @@ async def test_failed_rpc_request(config):
 def test_calculate_statistics():
     """Test statistics calculation."""
     results = [
-        TestResult(
-            url="https://test.example.com",
-            method="eth_blockNumber",
-            success=True,
-            latency_ms=100.0
+        RpcTestResult(
+            url="https://test.example.com", method="eth_blockNumber", success=True, latency_ms=100.0
         ),
-        TestResult(
-            url="https://test.example.com",
-            method="eth_blockNumber",
-            success=True,
-            latency_ms=150.0
+        RpcTestResult(
+            url="https://test.example.com", method="eth_blockNumber", success=True, latency_ms=150.0
         ),
-        TestResult(
+        RpcTestResult(
             url="https://test.example.com",
             method="eth_blockNumber",
             success=False,
             latency_ms=None,
-            error="Timeout"
-        )
+            error="Timeout",
+        ),
     ]
 
     config = Config(rpc_urls=["https://test.example.com"])
@@ -135,9 +123,7 @@ def test_percentile_calculation():
 
 def test_get_params_for_method():
     """Test parameter generation for different methods."""
-    config = Config(
-        test_address="0x1234567890123456789012345678901234567890"
-    )
+    config = Config(test_address="0x1234567890123456789012345678901234567890")
     tester = RPCTester(config)
 
     params_block = tester._get_params_for_method("eth_blockNumber")

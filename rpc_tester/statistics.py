@@ -4,15 +4,16 @@ Advanced statistical analysis for RPC test results.
 Provides detailed statistical metrics, distributions, and trend analysis.
 """
 
-import statistics
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass
 import math
+import statistics
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
 class StatisticalSummary:
     """Statistical summary of test results."""
+
     mean: float
     median: float
     mode: Optional[float]
@@ -77,10 +78,25 @@ class StatisticalAnalyzer:
         """
         if not data:
             return StatisticalSummary(
-                mean=0, median=0, mode=None, std_dev=0, variance=0,
-                min_value=0, max_value=0, range=0,
-                p25=0, p50=0, p75=0, p90=0, p95=0, p99=0, p999=0,
-                iqr=0, skewness=0, kurtosis=0, coefficient_of_variation=0
+                mean=0,
+                median=0,
+                mode=None,
+                std_dev=0,
+                variance=0,
+                min_value=0,
+                max_value=0,
+                range=0,
+                p25=0,
+                p50=0,
+                p75=0,
+                p90=0,
+                p95=0,
+                p99=0,
+                p999=0,
+                iqr=0,
+                skewness=0,
+                kurtosis=0,
+                coefficient_of_variation=0,
             )
 
         mean = statistics.mean(data)
@@ -110,13 +126,13 @@ class StatisticalAnalyzer:
         # Calculate skewness
         n = len(data)
         if std_dev > 0:
-            skewness = sum((x - mean) ** 3 for x in data) / (n * std_dev ** 3)
+            skewness = sum((x - mean) ** 3 for x in data) / (n * std_dev**3)
         else:
             skewness = 0
 
         # Calculate kurtosis
         if std_dev > 0:
-            kurtosis = sum((x - mean) ** 4 for x in data) / (n * std_dev ** 4) - 3
+            kurtosis = sum((x - mean) ** 4 for x in data) / (n * std_dev**4) - 3
         else:
             kurtosis = 0
 
@@ -142,7 +158,7 @@ class StatisticalAnalyzer:
             iqr=iqr,
             skewness=skewness,
             kurtosis=kurtosis,
-            coefficient_of_variation=cv
+            coefficient_of_variation=cv,
         )
 
     @staticmethod
@@ -200,11 +216,7 @@ class StatisticalAnalyzer:
             Dictionary with trend information
         """
         if len(data) < 2:
-            return {
-                'direction': 'stable',
-                'slope': 0,
-                'strength': 0
-            }
+            return {"direction": "stable", "slope": 0, "strength": 0}
 
         # Simple linear regression
         n = len(data)
@@ -224,17 +236,17 @@ class StatisticalAnalyzer:
 
         # Determine direction
         if abs(slope) < 0.01:
-            direction = 'stable'
+            direction = "stable"
         elif slope > 0:
-            direction = 'increasing'
+            direction = "increasing"
         else:
-            direction = 'decreasing'
+            direction = "decreasing"
 
         return {
-            'direction': direction,
-            'slope': slope,
-            'strength': r_squared,
-            'correlation': math.sqrt(r_squared) if r_squared >= 0 else 0
+            "direction": direction,
+            "slope": slope,
+            "strength": r_squared,
+            "correlation": math.sqrt(r_squared) if r_squared >= 0 else 0,
         }
 
     @staticmethod
@@ -250,7 +262,7 @@ class StatisticalAnalyzer:
             Dictionary with histogram data
         """
         if not data:
-            return {'bins': [], 'counts': [], 'edges': []}
+            return {"bins": [], "counts": [], "edges": []}
 
         min_val = min(data)
         max_val = max(data)
@@ -271,11 +283,7 @@ class StatisticalAnalyzer:
 
         bin_centers = [(edges[i] + edges[i + 1]) / 2 for i in range(bins)]
 
-        return {
-            'bins': bin_centers,
-            'counts': counts,
-            'edges': edges
-        }
+        return {"bins": bin_centers, "counts": counts, "edges": edges}
 
     @staticmethod
     def compare_distributions(data1: List[float], data2: List[float]) -> Dict[str, Any]:
@@ -303,13 +311,13 @@ class StatisticalAnalyzer:
         median_change_pct = (median_diff / summary1.median * 100) if summary1.median > 0 else 0
 
         return {
-            'mean_difference': mean_diff,
-            'median_difference': median_diff,
-            'std_dev_difference': std_diff,
-            'mean_change_percent': mean_change_pct,
-            'median_change_percent': median_change_pct,
-            'data1_summary': summary1,
-            'data2_summary': summary2
+            "mean_difference": mean_diff,
+            "median_difference": median_diff,
+            "std_dev_difference": std_diff,
+            "mean_change_percent": mean_change_pct,
+            "median_change_percent": median_change_pct,
+            "data1_summary": summary1,
+            "data2_summary": summary2,
         }
 
 
@@ -317,9 +325,9 @@ class PerformanceMetrics:
     """Calculate performance-specific metrics."""
 
     @staticmethod
-    def calculate_apdex(response_times: List[float],
-                       threshold: float = 500.0,
-                       tolerance_multiplier: float = 4.0) -> float:
+    def calculate_apdex(
+        response_times: List[float], threshold: float = 500.0, tolerance_multiplier: float = 4.0
+    ) -> float:
         """
         Calculate APDEX (Application Performance Index) score.
 
@@ -335,8 +343,9 @@ class PerformanceMetrics:
             return 0.0
 
         satisfied = sum(1 for t in response_times if t <= threshold)
-        tolerating = sum(1 for t in response_times
-                        if threshold < t <= threshold * tolerance_multiplier)
+        tolerating = sum(
+            1 for t in response_times if threshold < t <= threshold * tolerance_multiplier
+        )
 
         total = len(response_times)
         apdex = (satisfied + tolerating / 2) / total
@@ -344,9 +353,9 @@ class PerformanceMetrics:
         return apdex
 
     @staticmethod
-    def calculate_sla_compliance(response_times: List[float],
-                                 sla_threshold: float,
-                                 target_percentile: float = 95.0) -> Dict[str, Any]:
+    def calculate_sla_compliance(
+        response_times: List[float], sla_threshold: float, target_percentile: float = 95.0
+    ) -> Dict[str, Any]:
         """
         Calculate SLA compliance.
 
@@ -360,10 +369,10 @@ class PerformanceMetrics:
         """
         if not response_times:
             return {
-                'compliant': False,
-                'percentile_value': 0,
-                'threshold': sla_threshold,
-                'compliance_rate': 0
+                "compliant": False,
+                "percentile_value": 0,
+                "threshold": sla_threshold,
+                "compliance_rate": 0,
             }
 
         percentile_value = StatisticalAnalyzer.calculate_percentile(
@@ -371,14 +380,16 @@ class PerformanceMetrics:
         )
 
         compliant = percentile_value <= sla_threshold
-        compliance_rate = sum(1 for t in response_times if t <= sla_threshold) / len(response_times) * 100
+        compliance_rate = (
+            sum(1 for t in response_times if t <= sla_threshold) / len(response_times) * 100
+        )
 
         return {
-            'compliant': compliant,
-            'percentile_value': percentile_value,
-            'threshold': sla_threshold,
-            'target_percentile': target_percentile,
-            'compliance_rate': compliance_rate
+            "compliant": compliant,
+            "percentile_value": percentile_value,
+            "threshold": sla_threshold,
+            "target_percentile": target_percentile,
+            "compliance_rate": compliance_rate,
         }
 
     @staticmethod
@@ -394,17 +405,13 @@ class PerformanceMetrics:
             Availability metrics
         """
         if total == 0:
-            return {
-                'availability_percent': 0,
-                'uptime_sla': '0%',
-                'nines': 0
-            }
+            return {"availability_percent": 0, "uptime_sla": "0%", "nines": 0}
 
         availability = (successful / total) * 100
 
         # Calculate "nines" (e.g., 99.9% = "three nines")
         if availability >= 100:
-            nines = float('inf')
+            nines = float("inf")
         elif availability > 0:
             nines = -math.log10(100 - availability)
         else:
@@ -423,10 +430,10 @@ class PerformanceMetrics:
             sla = "Below 90%"
 
         return {
-            'availability_percent': availability,
-            'uptime_sla': sla,
-            'nines': nines,
-            'successful': successful,
-            'failed': total - successful,
-            'total': total
+            "availability_percent": availability,
+            "uptime_sla": sla,
+            "nines": nines,
+            "successful": successful,
+            "failed": total - successful,
+            "total": total,
         }

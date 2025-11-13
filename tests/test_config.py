@@ -2,10 +2,12 @@
 Unit tests for configuration management.
 """
 
-import pytest
 import json
-import yaml
 from pathlib import Path
+
+import pytest
+import yaml
+
 from rpc_tester.config import Config
 
 
@@ -26,7 +28,7 @@ def test_config_custom_values():
         rpc_urls=["https://test1.com", "https://test2.com"],
         num_requests=50,
         concurrent_requests=10,
-        timeout=60.0
+        timeout=60.0,
     )
 
     assert config.rpc_urls == ["https://test1.com", "https://test2.com"]
@@ -37,17 +39,14 @@ def test_config_custom_values():
 
 def test_config_to_json_file(tmp_path):
     """Test saving configuration to JSON file."""
-    config = Config(
-        rpc_urls=["https://test.com"],
-        num_requests=25
-    )
+    config = Config(rpc_urls=["https://test.com"], num_requests=25)
 
     json_file = tmp_path / "config.json"
     config.to_file(str(json_file))
 
     assert json_file.exists()
 
-    with open(json_file, 'r') as f:
+    with open(json_file, "r") as f:
         data = json.load(f)
 
     assert data["rpc_urls"] == ["https://test.com"]
@@ -56,17 +55,14 @@ def test_config_to_json_file(tmp_path):
 
 def test_config_to_yaml_file(tmp_path):
     """Test saving configuration to YAML file."""
-    config = Config(
-        rpc_urls=["https://test.com"],
-        num_requests=25
-    )
+    config = Config(rpc_urls=["https://test.com"], num_requests=25)
 
     yaml_file = tmp_path / "config.yaml"
     config.to_file(str(yaml_file))
 
     assert yaml_file.exists()
 
-    with open(yaml_file, 'r') as f:
+    with open(yaml_file, "r") as f:
         data = yaml.safe_load(f)
 
     assert data["rpc_urls"] == ["https://test.com"]
@@ -77,13 +73,9 @@ def test_config_from_json_file(tmp_path):
     """Test loading configuration from JSON file."""
     json_file = tmp_path / "config.json"
 
-    data = {
-        "rpc_urls": ["https://test.com"],
-        "num_requests": 30,
-        "timeout": 45.0
-    }
+    data = {"rpc_urls": ["https://test.com"], "num_requests": 30, "timeout": 45.0}
 
-    with open(json_file, 'w') as f:
+    with open(json_file, "w") as f:
         json.dump(data, f)
 
     config = Config.from_file(str(json_file))
@@ -97,13 +89,9 @@ def test_config_from_yaml_file(tmp_path):
     """Test loading configuration from YAML file."""
     yaml_file = tmp_path / "config.yaml"
 
-    data = {
-        "rpc_urls": ["https://test.com"],
-        "num_requests": 30,
-        "timeout": 45.0
-    }
+    data = {"rpc_urls": ["https://test.com"], "num_requests": 30, "timeout": 45.0}
 
-    with open(yaml_file, 'w') as f:
+    with open(yaml_file, "w") as f:
         yaml.dump(data, f)
 
     config = Config.from_file(str(yaml_file))
